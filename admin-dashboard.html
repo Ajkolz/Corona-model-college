@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Admin Dashboard – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <div><h2>Corona Model</h2><span style="font-size:10px;color:#475569;">Admin Portal</span></div>
+  </div>
+  <nav>
+    <a href="admin-dashboard.html" class="active">📊 Dashboard</a>
+    <a href="announcements.html">📢 Announcements</a>
+    <a href="reportcard.html">📋 Report Cards</a>
+    <a href="fees.html">💰 School Fees</a>
+    <a href="alumni.html">🎓 Alumni</a>
+    <a href="manage-accounts.html">🔐 Manage Accounts</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">Admin Dashboard</span>
+  <button onclick="doLogout()" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">⏻</button>
+</div>
+
+<div class="main-content">
+  <div class="topbar">
+    <h1>Admin Dashboard</h1>
+    <p class="topbar-sub" id="activeBanner">Loading active term...</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon">👨‍🎓</div><div class="stat-val" id="statStudents">—</div><div class="stat-lbl">Total Students</div></div>
+    <div class="stat-card"><div class="stat-icon">🏫</div><div class="stat-val" id="statClasses">—</div><div class="stat-lbl">Active Classes</div></div>
+    <div class="stat-card"><div class="stat-icon">🎓</div><div class="stat-val" id="statAlumni">—</div><div class="stat-lbl">Alumni</div></div>
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="statFeesPaid">—</div><div class="stat-lbl">Fees Paid (Term)</div></div>
+  </div>
+
+  <div class="card">
+    <h3>➕ Add New Student</h3>
+    <div class="form-row">
+      <div class="form-group"><label>First Name *</label><input id="firstName" placeholder="e.g. Chukwuemeka"></div>
+      <div class="form-group"><label>Middle Name</label><input id="middleName" placeholder="e.g. Obinna"></div>
+      <div class="form-group"><label>Last Name *</label><input id="lastName" placeholder="e.g. Nwosu"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Admission Number *</label><input id="admissionNumber" placeholder="e.g. CMC/2024/001"></div>
+      <div class="form-group"><label>Login Password *</label><input id="studentPassword" placeholder="Set a password"></div>
+      <div class="form-group">
+        <label>Class *</label>
+        <select id="class">
+          <optgroup label="Basic School">
+            <option value="Basic 1A">Basic 1A</option><option value="Basic 1B">Basic 1B</option>
+            <option value="Basic 2A">Basic 2A</option><option value="Basic 2B">Basic 2B</option>
+            <option value="Basic 3A">Basic 3A</option><option value="Basic 3B">Basic 3B</option>
+          </optgroup>
+          <optgroup label="Senior Secondary">
+            <option value="SS 1 Art">SS 1 Art</option><option value="SS 1 Commercial">SS 1 Commercial</option>
+            <option value="SS 1 Science">SS 1 Science</option><option value="SS 2 Art">SS 2 Art</option>
+            <option value="SS 2 Commercial">SS 2 Commercial</option><option value="SS 2 Science">SS 2 Science</option>
+            <option value="SS 3 Art">SS 3 Art</option><option value="SS 3 Commercial">SS 3 Commercial</option>
+            <option value="SS 3 Science">SS 3 Science</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="section-divider">🩺 Medical & Personal Details</div>
+    <div class="form-row">
+      <div class="form-group"><label>Height (cm)</label><input id="height" placeholder="e.g. 145"></div>
+      <div class="form-group">
+        <label>Blood Group</label>
+        <select id="bloodGroup">
+          <option value="">— Select —</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Known Medical Condition</label><input id="medicalCondition" placeholder="e.g. Asthma, None"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Parent / Guardian Phone 1</label><input id="parentPhone1" placeholder="e.g. 08012345678"></div>
+      <div class="form-group"><label>Parent / Guardian Phone 2</label><input id="parentPhone2" placeholder="e.g. 08087654321"></div>
+      <div class="form-group"><label>Passport Photo (optional)</label><input type="file" id="passportPhoto" accept="image/*"></div>
+    </div>
+    <div id="photoPreview" style="display:none;margin-bottom:15px;">
+      <img id="previewImg" style="width:80px;height:100px;object-fit:cover;border-radius:8px;border:3px solid #d4a24c;">
+    </div>
+    <button onclick="addStudent()" class="btn-primary">Add Student</button>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h3>👨‍🎓 All Students</h3>
+      <input id="searchInput" placeholder="🔍 Search name or admission no..." oninput="searchStudents()" class="search-input">
+    </div>
+    <div id="classTree"></div>
+    <div id="studentPanel" style="display:none;">
+      <div class="student-panel-header">
+        <button onclick="closePanel()" class="back-btn">← Back</button>
+        <h4 id="panelTitle"></h4>
+        <span id="panelCount" class="branch-count"></span>
+      </div>
+      <div class="bs-table-wrap">
+        <table><thead><tr><th>Photo</th><th>Full Name</th><th>Admission No.</th><th>Class</th><th>Fees</th><th>Actions</th></tr></thead>
+        <tbody id="studentPanelTable"></tbody></table>
+      </div>
+    </div>
+    <div id="searchResults" style="display:none;">
+      <div class="student-panel-header">
+        <h4>Search Results</h4><span id="searchCount" class="branch-count"></span>
+      </div>
+      <div class="bs-table-wrap">
+        <table><thead><tr><th>Photo</th><th>Full Name</th><th>Admission No.</th><th>Class</th><th>Fees</th><th>Actions</th></tr></thead>
+        <tbody id="searchTable"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("admin");
+if(!session) throw new Error("Not authorised");
+
+const CLASS_GROUPS = [
+  {group:"Basic 1",branches:["Basic 1A","Basic 1B"]},
+  {group:"Basic 2",branches:["Basic 2A","Basic 2B"]},
+  {group:"Basic 3",branches:["Basic 3A","Basic 3B"]},
+  {group:"SS 1",branches:["SS 1 Art","SS 1 Commercial","SS 1 Science"]},
+  {group:"SS 2",branches:["SS 2 Art","SS 2 Commercial","SS 2 Science"]},
+  {group:"SS 3",branches:["SS 3 Art","SS 3 Commercial","SS 3 Science"]}
+];
+
+let allStudents=[], allFees=[], activeTerm="First Term", activeSession="";
+
+window.doLogout=function(){signOut(window.auth).then(()=>{window.clearSession();window.location.href="login.html";});};
+window.toggleSidebar=function(){document.getElementById("sidebar").classList.toggle("open");};
+
+document.getElementById("passportPhoto").addEventListener("change",function(){
+  const file=this.files[0];
+  if(file){const r=new FileReader();r.onload=e=>{document.getElementById("previewImg").src=e.target.result;document.getElementById("photoPreview").style.display="block";};r.readAsDataURL(file);}
+});
+
+function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
+
+function feesBadge(status){
+  if(!status||status==="not_paid") return `<span class="fees-badge fees-not-paid">Not Paid</span>`;
+  if(status==="part_payment") return `<span class="fees-badge fees-part">Part Payment</span>`;
+  if(status==="paid") return `<span class="fees-badge fees-paid">✅ Paid</span>`;
+  return `<span class="fees-badge fees-not-paid">—</span>`;
+}
+
+function getFeeStatus(studentId){
+  const rec=allFees.find(f=>f.studentId===studentId&&f.term===activeTerm&&f.session===activeSession);
+  return rec?rec.status:"not_paid";
+}
+
+setTimeout(async()=>{
+  const db=window.db;
+  try{const ss=await getDoc(doc(db,"settings","school"));if(ss.exists()){activeTerm=ss.data().term||"First Term";activeSession=ss.data().session||"";document.getElementById("activeBanner").textContent=`Active: ${activeTerm} · ${activeSession}`;}}catch(e){}
+  await loadAll();
+
+  window.addStudent=async function(){
+    const firstName=document.getElementById("firstName").value.trim();
+    const middleName=document.getElementById("middleName").value.trim();
+    const lastName=document.getElementById("lastName").value.trim();
+    const admissionNumber=document.getElementById("admissionNumber").value.trim();
+    const loginPassword=document.getElementById("studentPassword").value.trim();
+    const cls=document.getElementById("class").value;
+    const height=document.getElementById("height").value.trim();
+    const bloodGroup=document.getElementById("bloodGroup").value;
+    const medicalCondition=document.getElementById("medicalCondition").value.trim();
+    const parentPhone1=document.getElementById("parentPhone1").value.trim();
+    const parentPhone2=document.getElementById("parentPhone2").value.trim();
+    const photoFile=document.getElementById("passportPhoto").files[0];
+    if(!firstName||!lastName||!admissionNumber||!loginPassword){alert("First name, last name, admission number and password are required.");return;}
+    let photo="";
+    if(photoFile){if(photoFile.size>2*1024*1024){alert("Photo max 2MB");return;}photo=await toBase64(photoFile);}
+    const fullName=[firstName,middleName,lastName].filter(Boolean).join(" ");
+    await addDoc(collection(db,"students"),{firstName,middleName,lastName,fullName,class:cls,photo,admissionNumber,loginPassword,height,bloodGroup,medicalCondition,parentPhone1,parentPhone2});
+    alert(`Student "${fullName}" added successfully!`);
+    ["firstName","middleName","lastName","admissionNumber","studentPassword","height","medicalCondition","parentPhone1","parentPhone2"].forEach(id=>{document.getElementById(id).value="";});
+    document.getElementById("bloodGroup").value="";
+    document.getElementById("passportPhoto").value="";
+    document.getElementById("photoPreview").style.display="none";
+    await loadAll();
+  };
+
+  async function loadAll(){
+    const [studSnap,feesSnap]=await Promise.all([getDocs(collection(db,"students")),getDocs(collection(db,"feePayments"))]);
+    allStudents=[];studSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+    allFees=[];feesSnap.forEach(d=>allFees.push({id:d.id,...d.data()}));
+    const active=allStudents.filter(s=>s.status!=="graduated");
+    const alumni=allStudents.filter(s=>s.status==="graduated");
+    const classes=[...new Set(active.map(s=>s.class))];
+    const paidCount=allFees.filter(f=>f.term===activeTerm&&f.session===activeSession&&f.status==="paid").length;
+    document.getElementById("statStudents").textContent=active.length;
+    document.getElementById("statClasses").textContent=classes.length;
+    document.getElementById("statAlumni").textContent=alumni.length;
+    document.getElementById("statFeesPaid").textContent=paidCount;
+    buildTree();
+  }
+
+  function buildTree(){
+    const tree=document.getElementById("classTree");tree.innerHTML="";
+    CLASS_GROUPS.forEach(group=>{
+      const gs=allStudents.filter(s=>group.branches.includes(s.class)&&s.status!=="graduated").length;
+      if(gs===0)return;
+      const gid="tg-"+group.group.replace(/\s/g,"-");
+      const el=document.createElement("div");el.className="tree-group";
+      el.innerHTML=`<div class="tree-group-row" onclick="toggleTreeGroup('${gid}',this)"><span class="tree-arrow">▶</span><span class="tree-group-name">${group.group}</span><span class="tree-total">${gs}</span></div><div class="tree-branches" id="${gid}" style="display:none;">${group.branches.map(b=>{const bc=allStudents.filter(s=>s.class===b&&s.status!=="graduated").length;if(bc===0)return"";return`<div class="tree-branch-row" onclick="openBranch('${b}')"><span class="tree-branch-dot">◆</span><span class="tree-branch-name">${b}</span><span class="branch-count">${bc}</span></div>`;}).join("")}</div>`;
+      tree.appendChild(el);
+    });
+  }
+
+  window.toggleTreeGroup=function(id,row){const el=document.getElementById(id);const arr=row.querySelector(".tree-arrow");const open=el.style.display!=="none";el.style.display=open?"none":"block";arr.textContent=open?"▶":"▼";row.classList.toggle("open",!open);};
+
+  window.openBranch=function(branch){
+    const students=allStudents.filter(s=>s.class===branch&&s.status!=="graduated");
+    document.getElementById("classTree").style.display="none";
+    document.getElementById("studentPanel").style.display="block";
+    document.getElementById("searchResults").style.display="none";
+    document.getElementById("panelTitle").textContent="🏫 "+branch;
+    document.getElementById("panelCount").textContent=students.length+" student"+(students.length!==1?"s":"");
+    renderTable("studentPanelTable",students);
+  };
+
+  window.closePanel=function(){
+    document.getElementById("studentPanel").style.display="none";
+    document.getElementById("classTree").style.display="block";
+    document.getElementById("searchResults").style.display="none";
+    document.getElementById("searchInput").value="";
+  };
+
+  function renderTable(tbodyId,list){
+    const tb=document.getElementById(tbodyId);tb.innerHTML="";
+    if(list.length===0){tb.innerHTML=`<tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">No students found.</td></tr>`;return;}
+    list.forEach(s=>{
+      const photo=s.photo?`<img src="${s.photo}" style="width:38px;height:48px;object-fit:cover;border-radius:6px;border:2px solid #d4a24c;">`:`<div style="width:38px;height:48px;background:#0f172a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>`;
+      const feeSt=getFeeStatus(s.id);
+      tb.innerHTML+=`<tr><td>${photo}</td><td><a href="student.html?id=${s.id}" style="color:#93c5fd;">${s.fullName||s.name||"—"}</a></td><td style="font-size:12px;color:#94a3b8;">${s.admissionNumber||"—"}</td><td><span class="class-badge">${s.class}</span></td><td>${feesBadge(feeSt)}</td><td><a href="student.html?id=${s.id}" class="btn-view">Profile</a><button onclick="deleteStudent('${s.id}')" class="btn-delete">Delete</button></td></tr>`;
+    });
+  }
+
+  window.searchStudents=function(){
+    const q=document.getElementById("searchInput").value.trim().toLowerCase();
+    if(!q){document.getElementById("searchResults").style.display="none";document.getElementById("classTree").style.display="block";document.getElementById("studentPanel").style.display="none";return;}
+    const filtered=allStudents.filter(s=>(s.fullName||s.name||"").toLowerCase().includes(q)||(s.class||"").toLowerCase().includes(q)||(s.admissionNumber||"").toLowerCase().includes(q));
+    document.getElementById("classTree").style.display="none";
+    document.getElementById("studentPanel").style.display="none";
+    document.getElementById("searchResults").style.display="block";
+    document.getElementById("searchCount").textContent=filtered.length+" result"+(filtered.length!==1?"s":"");
+    renderTable("searchTable",filtered);
+  };
+
+  window.deleteStudent=async function(id){
+    if(!confirm("Delete this student? This cannot be undone."))return;
+    await deleteDoc(doc(db,"students",id));
+    await loadAll();closePanel();
+  };
+},500);
+</script>
+</body>
+</html>

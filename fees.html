@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>School Fees – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <div>
+      <h2>Corona Model</h2>
+      <span style="font-size:10px;color:#475569;">Admin Portal</span>
+    </div>
+  </div>
+  <nav>
+    <a href="admin-dashboard.html">📊 Dashboard</a>
+    <a href="reportcard.html">📋 Report Cards</a>
+    <a href="fees.html" class="active">💰 School Fees</a>
+    <a href="alumni.html">🎓 Alumni</a>
+    <a href="manage-accounts.html">🔐 Manage Accounts</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">School Fees</span>
+</div>
+
+<div class="main-content">
+
+  <div class="topbar">
+    <h1>💰 School Fees</h1>
+    <p class="topbar-sub" id="feesBanner">Loading...</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('structure',this)">⚙️ Fee Structure</button>
+    <button class="tab-btn" onclick="showTab('payments',this)">💳 Record Payment</button>
+    <button class="tab-btn" onclick="showTab('overview',this)">📊 Payment Overview</button>
+  </div>
+
+  <!-- FEE STRUCTURE TAB -->
+  <div id="tab-structure" class="tab-content">
+    <div class="card">
+      <h3>⚙️ Set Fee Structure</h3>
+      <p style="color:#94a3b8;font-size:14px;margin-bottom:20px;">
+        Set default annual fees. These apply to all students.
+        Optional items (Bus, Feeding) can be opted into per student.
+      </p>
+
+      <div class="section-divider">📌 Compulsory Fees</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tuition Fee (₦)</label>
+          <input type="number" id="feeTuition" placeholder="e.g. 150000">
+        </div>
+        <div class="form-group">
+          <label>Books (₦)</label>
+          <input type="number" id="feeBooks" placeholder="e.g. 25000">
+        </div>
+        <div class="form-group">
+          <label>Uniforms (₦)</label>
+          <input type="number" id="feeUniforms" placeholder="e.g. 15000">
+        </div>
+      </div>
+
+      <div class="section-divider">⭐ Optional Fees</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>School Bus (₦) — Optional</label>
+          <input type="number" id="feeBus" placeholder="e.g. 30000">
+        </div>
+        <div class="form-group">
+          <label>Feeding / Lunch (₦) — Optional</label>
+          <input type="number" id="feeFeeding" placeholder="e.g. 20000">
+        </div>
+      </div>
+
+      <button onclick="saveFeeStructure()" class="btn-primary">
+        💾 Save Fee Structure
+      </button>
+      <div id="feeStructureSaved"
+        style="display:none;margin-top:12px;color:#22c55e;font-size:14px;">
+        ✅ Fee structure saved successfully.
+      </div>
+    </div>
+
+    <!-- Current Structure Display -->
+    <div class="card" id="currentStructureCard" style="display:none;">
+      <h3>📋 Current Fee Structure</h3>
+      <div id="currentStructureContent"></div>
+    </div>
+  </div>
+
+  <!-- RECORD PAYMENT TAB -->
+  <div id="tab-payments" class="tab-content" style="display:none;">
+    <div class="card">
+      <h3>💳 Record Student Payment</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Search Student</label>
+          <input id="payStudentSearch" placeholder="Type name or admission no..."
+            oninput="searchPayStudent()">
+          <div id="payStudentResults" style="margin-top:8px;"></div>
+        </div>
+        <div class="form-group">
+          <label>Term</label>
+          <select id="payTerm">
+            <option>First Term</option>
+            <option>Second Term</option>
+            <option>Third Term</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Session</label>
+          <input id="paySession" placeholder="e.g. 2024/2025">
+        </div>
+      </div>
+
+      <!-- Selected student info -->
+      <div id="selectedStudentInfo" style="display:none;
+        background:#0f172a;border:1px solid #334155;border-radius:10px;
+        padding:16px;margin:16px 0;">
+        <p style="color:#d4a24c;font-weight:600;" id="selectedStudentName"></p>
+        <p style="color:#94a3b8;font-size:13px;" id="selectedStudentClass"></p>
+      </div>
+
+      <div class="section-divider">💰 Payment Breakdown</div>
+
+      <div id="paymentBreakdown" style="margin-bottom:20px;"></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Amount Paid (₦)</label>
+          <input type="number" id="amountPaid" placeholder="Enter amount paid">
+        </div>
+        <div class="form-group">
+          <label>Payment Status</label>
+          <select id="paymentStatus">
+            <option value="paid">✅ Fully Paid</option>
+            <option value="part_payment">⚡ Part Payment</option>
+            <option value="not_paid">❌ Not Paid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Payment Date</label>
+          <input type="date" id="paymentDate">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Optional Services Selected</label>
+        <div style="display:flex;gap:16px;margin-top:8px;">
+          <label style="display:flex;align-items:center;gap:8px;
+            cursor:pointer;font-size:14px;color:#cbd5e1;">
+            <input type="checkbox" id="optBus"
+              style="accent-color:#d4a24c;width:15px;height:15px;">
+            🚌 School Bus
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;
+            cursor:pointer;font-size:14px;color:#cbd5e1;">
+            <input type="checkbox" id="optFeeding"
+              style="accent-color:#d4a24c;width:15px;height:15px;">
+            🍱 Feeding
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Notes / Receipt No.</label>
+        <input id="paymentNote" placeholder="e.g. Receipt #1234">
+      </div>
+
+      <button onclick="recordPayment()" class="btn-primary">
+        💾 Save Payment Record
+      </button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div id="tab-overview" class="tab-content" style="display:none;">
+    <div class="card">
+      <div class="card-header-row">
+        <h3>📊 Payment Overview by Class</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <select id="overviewTerm" onchange="loadOverview()"
+            style="padding:8px;background:#0f172a;border:1px solid #334155;
+            border-radius:8px;color:#e2e8f0;font-size:13px;">
+            <option>First Term</option>
+            <option>Second Term</option>
+            <option>Third Term</option>
+          </select>
+          <input id="overviewSession" placeholder="Session e.g. 2024/2025"
+            oninput="loadOverview()"
+            style="padding:8px 12px;background:#0f172a;border:1px solid #334155;
+            border-radius:8px;color:#e2e8f0;font-size:13px;width:180px;">
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="stats-row" style="margin-bottom:24px;" id="overviewStats"></div>
+
+      <!-- By class -->
+      <div id="overviewByClass"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import {
+  collection, getDocs, doc, getDoc,
+  setDoc, addDoc, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("admin");
+if(!session) throw new Error("Not authorised");
+
+let allStudents   = [];
+let feeStructure  = {};
+let selectedPayStudentId = null;
+let activeTerm    = "First Term";
+let activeSession = "";
+
+const CLASS_GROUPS = [
+  { group:"Basic 1", branches:["Basic 1A","Basic 1B"] },
+  { group:"Basic 2", branches:["Basic 2A","Basic 2B"] },
+  { group:"Basic 3", branches:["Basic 3A","Basic 3B"] },
+  { group:"SS 1",    branches:["SS 1 Art","SS 1 Commercial","SS 1 Science"] },
+  { group:"SS 2",    branches:["SS 2 Art","SS 2 Commercial","SS 2 Science"] },
+  { group:"SS 3",    branches:["SS 3 Art","SS 3 Commercial","SS 3 Science"] }
+];
+
+function fmt(n){ return "₦"+Number(n||0).toLocaleString(); }
+
+window.doLogout = function(){
+  signOut(window.auth).then(()=>{ window.clearSession(); window.location.href="login.html"; });
+};
+window.toggleSidebar = function(){
+  document.getElementById("sidebar").classList.toggle("open");
+};
+window.showTab = function(tab, btn){
+  document.querySelectorAll(".tab-content").forEach(t=>t.style.display="none");
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+tab).style.display="block";
+  if(btn) btn.classList.add("active");
+  if(tab==="overview") loadOverview();
+};
+
+setTimeout(async()=>{
+  const db = window.db;
+
+  // Load settings
+  try {
+    const ss = await getDoc(doc(db,"settings","school"));
+    if(ss.exists()){
+      activeTerm    = ss.data().term    || "First Term";
+      activeSession = ss.data().session || "";
+    }
+  } catch(e){}
+
+  document.getElementById("feesBanner").textContent =
+    `${activeTerm} · ${activeSession||"Set session in Settings"}`;
+  document.getElementById("payTerm").value    = activeTerm;
+  document.getElementById("paySession").value = activeSession;
+  document.getElementById("overviewTerm").value    = activeTerm;
+  document.getElementById("overviewSession").value = activeSession;
+  document.getElementById("paymentDate").valueAsDate = new Date();
+
+  // Load students
+  const sSnap = await getDocs(collection(db,"students"));
+  allStudents = [];
+  sSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+
+  // Load fee structure
+  await loadFeeStructure();
+
+  // ── FEE STRUCTURE ──────────────────────────────────────
+  async function loadFeeStructure(){
+    const snap = await getDoc(doc(db,"feeStructure","default"));
+    if(snap.exists()){
+      feeStructure = snap.data();
+      document.getElementById("feeTuition").value  = feeStructure.tuition  || "";
+      document.getElementById("feeBooks").value    = feeStructure.books    || "";
+      document.getElementById("feeUniforms").value = feeStructure.uniforms || "";
+      document.getElementById("feeBus").value      = feeStructure.bus      || "";
+      document.getElementById("feeFeeding").value  = feeStructure.feeding  || "";
+      showCurrentStructure();
+    }
+  }
+
+  function showCurrentStructure(){
+    const card = document.getElementById("currentStructureCard");
+    const cont = document.getElementById("currentStructureContent");
+    card.style.display="block";
+
+    const compulsory = (feeStructure.tuition||0) +
+                       (feeStructure.books||0) +
+                       (feeStructure.uniforms||0);
+    const total = compulsory +
+                  (feeStructure.bus||0) +
+                  (feeStructure.feeding||0);
+
+    cont.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+        <div class="fee-item-box compulsory">
+          <div class="fee-item-label">📚 Tuition</div>
+          <div class="fee-item-val">${fmt(feeStructure.tuition)}</div>
+          <div class="fee-item-tag">Compulsory</div>
+        </div>
+        <div class="fee-item-box compulsory">
+          <div class="fee-item-label">📖 Books</div>
+          <div class="fee-item-val">${fmt(feeStructure.books)}</div>
+          <div class="fee-item-tag">Compulsory</div>
+        </div>
+        <div class="fee-item-box compulsory">
+          <div class="fee-item-label">👕 Uniforms</div>
+          <div class="fee-item-val">${fmt(feeStructure.uniforms)}</div>
+          <div class="fee-item-tag">Compulsory</div>
+        </div>
+        ${feeStructure.bus ? `
+        <div class="fee-item-box optional">
+          <div class="fee-item-label">🚌 School Bus</div>
+          <div class="fee-item-val">${fmt(feeStructure.bus)}</div>
+          <div class="fee-item-tag optional-tag">Optional</div>
+        </div>` : ""}
+        ${feeStructure.feeding ? `
+        <div class="fee-item-box optional">
+          <div class="fee-item-label">🍱 Feeding</div>
+          <div class="fee-item-val">${fmt(feeStructure.feeding)}</div>
+          <div class="fee-item-tag optional-tag">Optional</div>
+        </div>` : ""}
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="background:#0f172a;padding:12px 20px;border-radius:8px;
+          border:1px solid #334155;">
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;">
+            Compulsory Total</div>
+          <div style="font-size:20px;font-weight:700;color:#d4a24c;
+            font-family:'Playfair Display',serif;">${fmt(compulsory)}</div>
+        </div>
+        <div style="background:#0f172a;padding:12px 20px;border-radius:8px;
+          border:1px solid #334155;">
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;">
+            Max Total (all options)</div>
+          <div style="font-size:20px;font-weight:700;color:#22c55e;
+            font-family:'Playfair Display',serif;">${fmt(total)}</div>
+        </div>
+      </div>`;
+  }
+
+  window.saveFeeStructure = async function(){
+    const data = {
+      tuition:  parseFloat(document.getElementById("feeTuition").value)||0,
+      books:    parseFloat(document.getElementById("feeBooks").value)||0,
+      uniforms: parseFloat(document.getElementById("feeUniforms").value)||0,
+      bus:      parseFloat(document.getElementById("feeBus").value)||0,
+      feeding:  parseFloat(document.getElementById("feeFeeding").value)||0
+    };
+    await setDoc(doc(db,"feeStructure","default"), data);
+    feeStructure = data;
+    document.getElementById("feeStructureSaved").style.display="block";
+    setTimeout(()=>{
+      document.getElementById("feeStructureSaved").style.display="none";
+    },3000);
+    showCurrentStructure();
+    renderPaymentBreakdown();
+  };
+
+  // ── PAYMENT RECORDING ─────────────────────────────────
+  window.searchPayStudent = function(){
+    const q  = document.getElementById("payStudentSearch").value.toLowerCase();
+    const container = document.getElementById("payStudentResults");
+    if(q.length<2){ container.innerHTML=""; return; }
+
+    const matches = allStudents.filter(s=>
+      (s.fullName||s.name||"").toLowerCase().includes(q)||
+      (s.admissionNumber||"").toLowerCase().includes(q)
+    ).slice(0,6);
+
+    if(matches.length===0){
+      container.innerHTML=`<p style="color:#64748b;font-size:13px;">No students found.</p>`;
+      return;
+    }
+
+    container.innerHTML = matches.map(s=>`
+      <div onclick="selectPayStudent('${s.id}')"
+        style="padding:10px 14px;background:#0f172a;border:1px solid #334155;
+        border-radius:8px;cursor:pointer;margin-bottom:6px;transition:all 0.2s;"
+        onmouseover="this.style.borderColor='#d4a24c'"
+        onmouseout="this.style.borderColor='#334155'">
+        <div style="font-weight:600;font-size:14px;">
+          ${s.fullName||s.name||"—"}</div>
+        <div style="font-size:12px;color:#94a3b8;">
+          ${s.admissionNumber||"—"} · ${s.class||"—"}</div>
+      </div>`).join("");
+  };
+
+  window.selectPayStudent = async function(id){
+    selectedPayStudentId = id;
+    const s = allStudents.find(st=>st.id===id);
+    if(!s) return;
+
+    document.getElementById("payStudentSearch").value =
+      s.fullName||s.name||"";
+    document.getElementById("payStudentResults").innerHTML="";
+
+    document.getElementById("selectedStudentName").textContent =
+      s.fullName||s.name||"—";
+    document.getElementById("selectedStudentClass").textContent =
+      `${s.class||"—"} · Admission: ${s.admissionNumber||"—"}`;
+    document.getElementById("selectedStudentInfo").style.display="block";
+
+    // Check existing payment
+    const term    = document.getElementById("payTerm").value;
+    const session = document.getElementById("paySession").value;
+    const pSnap   = await getDocs(collection(db,"feePayments"));
+    let existing  = null;
+    pSnap.forEach(d=>{
+      const data = d.data();
+      if(data.studentId===id&&data.term===term&&data.session===session){
+        existing = {id:d.id,...data};
+      }
+    });
+
+    if(existing){
+      document.getElementById("amountPaid").value  = existing.amountPaid||0;
+      document.getElementById("paymentStatus").value = existing.status||"not_paid";
+      document.getElementById("optBus").checked     = existing.optBus||false;
+      document.getElementById("optFeeding").checked = existing.optFeeding||false;
+      document.getElementById("paymentNote").value  = existing.note||"";
+    }
+
+    renderPaymentBreakdown();
+  };
+
+  function renderPaymentBreakdown(){
+    const container = document.getElementById("paymentBreakdown");
+    if(!feeStructure.tuition && !feeStructure.books){
+      container.innerHTML=`<p style="color:#64748b;font-size:13px;">
+        Set fee structure first (Fee Structure tab).</p>`;
+      return;
+    }
+    const compulsory = (feeStructure.tuition||0)+
+                       (feeStructure.books||0)+
+                       (feeStructure.uniforms||0);
+    container.innerHTML=`
+      <div style="display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+        <div class="fee-item-box compulsory">
+          <div class="fee-item-label">📚 Tuition</div>
+          <div class="fee-item-val">${fmt(feeStructure.tuition)}</div>
+        </div>
+        <div class="fee-item-box compulsory">
+          <div class="fee-item-label">📖 Books</div>
+          <div class="fee-item-val">${fmt(feeStructure.books)}</div>
+        </div>
+        <div class="fee-item-box compulsory">
+          <div class="fee-item-label">👕 Uniforms</div>
+          <div class="fee-item-val">${fmt(feeStructure.uniforms)}</div>
+        </div>
+        ${feeStructure.bus?`
+        <div class="fee-item-box optional">
+          <div class="fee-item-label">🚌 Bus (Optional)</div>
+          <div class="fee-item-val">${fmt(feeStructure.bus)}</div>
+        </div>`:""}
+        ${feeStructure.feeding?`
+        <div class="fee-item-box optional">
+          <div class="fee-item-label">🍱 Feeding (Optional)</div>
+          <div class="fee-item-val">${fmt(feeStructure.feeding)}</div>
+        </div>`:""}
+        <div class="fee-item-box" style="border-color:#d4a24c;">
+          <div class="fee-item-label">💰 Compulsory Total</div>
+          <div class="fee-item-val" style="color:#d4a24c;">${fmt(compulsory)}</div>
+        </div>
+      </div>`;
+  }
+
+  renderPaymentBreakdown();
+
+  window.recordPayment = async function(){
+    if(!selectedPayStudentId){
+      alert("Please search and select a student first.");
+      return;
+    }
+    const term      = document.getElementById("payTerm").value;
+    const session   = document.getElementById("paySession").value.trim();
+    const amount    = parseFloat(document.getElementById("amountPaid").value)||0;
+    const status    = document.getElementById("paymentStatus").value;
+    const optBus    = document.getElementById("optBus").checked;
+    const optFeed   = document.getElementById("optFeeding").checked;
+    const note      = document.getElementById("paymentNote").value.trim();
+    const date      = document.getElementById("paymentDate").value;
+    const student   = allStudents.find(s=>s.id===selectedPayStudentId);
+
+    if(!session){ alert("Please enter the session."); return; }
+
+    const compulsory = (feeStructure.tuition||0)+
+                       (feeStructure.books||0)+
+                       (feeStructure.uniforms||0);
+    const optTotal = (optBus?(feeStructure.bus||0):0) +
+                     (optFeed?(feeStructure.feeding||0):0);
+    const totalDue = compulsory + optTotal;
+
+    const docId = selectedPayStudentId+"_"+term.replace(/\s/g,"")+"_"+session.replace(/\//g,"-");
+
+    await setDoc(doc(db,"feePayments",docId),{
+      studentId:   selectedPayStudentId,
+      studentName: student?.fullName||student?.name||"—",
+      class:       student?.class||"—",
+      term, session, status,
+      amountPaid:  amount,
+      totalDue,
+      compulsory,
+      optBus, optFeeding: optFeed,
+      note, paymentDate: date,
+      updatedAt: new Date().toISOString()
+    });
+
+    alert(`✅ Payment recorded for ${student?.fullName||"student"}!\nStatus: ${status}`);
+    loadOverview();
+  };
+
+  // ── OVERVIEW ──────────────────────────────────────────
+  window.loadOverview = async function(){
+    const term    = document.getElementById("overviewTerm").value;
+    const session = document.getElementById("overviewSession").value.trim();
+
+    const pSnap = await getDocs(collection(db,"feePayments"));
+    const payments = [];
+    pSnap.forEach(d=>payments.push({id:d.id,...d.data()}));
+
+    const filtered = payments.filter(p=>
+      p.term===term && (session?p.session===session:true)
+    );
+
+    const paid      = filtered.filter(p=>p.status==="paid").length;
+    const partial   = filtered.filter(p=>p.status==="part_payment").length;
+    const notPaid   = allStudents.filter(s=>s.status!=="graduated").length
+                      - paid - partial;
+    const totalColl = filtered.reduce((a,b)=>a+(b.amountPaid||0),0);
+
+    document.getElementById("overviewStats").innerHTML=`
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" style="color:#22c55e;">${paid}</div>
+        <div class="stat-lbl">Fully Paid</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-val" style="color:#f59e0b;">${partial}</div>
+        <div class="stat-lbl">Part Payment</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-val" style="color:#ef4444;">${Math.max(0,notPaid)}</div>
+        <div class="stat-lbl">Not Paid</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💵</div>
+        <div class="stat-val" style="font-size:18px;">${fmt(totalColl)}</div>
+        <div class="stat-lbl">Total Collected</div>
+      </div>`;
+
+    // By class
+    const container = document.getElementById("overviewByClass");
+    container.innerHTML="";
+
+    CLASS_GROUPS.forEach(group=>{
+      const groupEl = document.createElement("div");
+      groupEl.className="tree-group";
+
+      const groupHtml = group.branches.map(branch=>{
+        const branchStudents = allStudents.filter(
+          s=>s.class===branch&&s.status!=="graduated"
+        );
+        if(branchStudents.length===0) return "";
+
+        const rows = branchStudents.map(s=>{
+          const p = filtered.find(f=>f.studentId===s.id);
+          const st = p?p.status:"not_paid";
+          const paid = p?p.amountPaid:0;
+          return `
+            <tr>
+              <td style="font-size:13px;">
+                <a href="student.html?id=${s.id}" style="color:#93c5fd;">
+                  ${s.fullName||s.name||"—"}
+                </a>
+              </td>
+              <td>${feesBadge(st)}</td>
+              <td style="font-size:13px;color:#d4a24c;">${fmt(paid)}</td>
+              <td style="font-size:12px;color:#64748b;">${p?.paymentDate||"—"}</td>
+            </tr>`;
+        }).join("");
+
+        const paidCount = branchStudents.filter(s=>{
+          const p=filtered.find(f=>f.studentId===s.id);
+          return p&&p.status==="paid";
+        }).length;
+
+        return `
+          <div class="branch-section">
+            <div class="branch-header">
+              🏫 ${branch}
+              <span class="branch-count">${branchStudents.length}</span>
+              <span style="margin-left:auto;font-size:12px;color:#22c55e;">
+                ${paidCount} paid
+              </span>
+            </div>
+            <div class="bs-table-wrap">
+              <table class="bs-table" style="margin-bottom:8px;">
+                <thead>
+                  <tr>
+                    <th>Student</th><th>Status</th>
+                    <th>Amount Paid</th><th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }).join("");
+
+      const gStudents = allStudents.filter(s=>
+        group.branches.includes(s.class)&&s.status!=="graduated"
+      ).length;
+      if(gStudents===0) return;
+
+      const gid = "ov-"+group.group.replace(/\s/g,"-");
+      groupEl.innerHTML=`
+        <div class="tree-group-row"
+          onclick="toggleTreeGroup('${gid}',this)">
+          <span class="tree-arrow">▶</span>
+          <span class="tree-group-name">${group.group}</span>
+          <span class="tree-total">${gStudents} students</span>
+        </div>
+        <div class="tree-branches" id="${gid}" style="display:none;">
+          ${groupHtml}
+        </div>`;
+
+      container.appendChild(groupEl);
+    });
+  };
+
+  window.toggleTreeGroup = function(id, row){
+    const el  = document.getElementById(id);
+    const arr = row.querySelector(".tree-arrow");
+    const open= el.style.display!=="none";
+    el.style.display = open?"none":"block";
+    arr.textContent  = open?"▶":"▼";
+    row.classList.toggle("open",!open);
+  };
+
+  function feesBadge(status){
+    if(!status||status==="not_paid")
+      return `<span class="fees-badge fees-not-paid">Not Paid</span>`;
+    if(status==="part_payment")
+      return `<span class="fees-badge fees-part">Part Payment</span>`;
+    if(status==="paid")
+      return `<span class="fees-badge fees-paid">✅ Paid</span>`;
+    return `<span class="fees-badge fees-not-paid">—</span>`;
+  }
+
+},500);
+</script>
+</body>
+</html>

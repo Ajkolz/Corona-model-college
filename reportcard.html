@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Report Cards – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="style.css">
+
+<style>
+body { display:flex; }
+
+.sidebar {
+  width:230px; height:100vh; background:#020617;
+  padding:24px 20px; position:fixed; top:0; left:0;
+  display:flex; flex-direction:column;
+  border-right:1px solid #1e293b; overflow-y:auto;
+}
+
+.sidebar-logo { display:flex; align-items:center; gap:10px; margin-bottom:24px; }
+.logo-icon { font-size:28px; }
+.sidebar h2 { font-family:'Playfair Display',serif; color:#d4a24c; font-size:16px; }
+.sidebar nav a {
+  display:block; color:#94a3b8; text-decoration:none;
+  padding:10px 14px; border-radius:8px; font-size:14px;
+  transition:all 0.2s; margin-bottom:4px;
+}
+.sidebar nav a:hover, .sidebar nav a.active { background:#1e293b; color:#d4a24c; }
+
+.sidebar-divider {
+  font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
+  color:#334155; padding:14px 14px 6px;
+}
+
+.tree-group { margin-bottom:4px; }
+.tree-group-row {
+  display:flex; align-items:center; gap:8px;
+  padding:9px 14px; cursor:pointer; border-radius:8px;
+  transition:background 0.15s; user-select:none;
+}
+.tree-group-row:hover, .tree-group-row.open { background:#1e293b; }
+.tree-arrow { color:#d4a24c; font-size:10px; width:12px; }
+.tree-group-name { font-size:13px; font-weight:600; flex:1; color:#cbd5e1; }
+.tree-total { font-size:11px; color:#475569; }
+.tree-branches { padding-left:8px; display:none; }
+.tree-branch-row {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 14px; cursor:pointer; border-radius:6px;
+  border-left:2px solid transparent; transition:all 0.15s; margin-bottom:2px;
+}
+.tree-branch-row:hover { background:#0f172a; border-left-color:#d4a24c; }
+.tree-branch-row.selected { background:#0f172a; border-left-color:#d4a24c; }
+.tree-branch-name { font-size:12px; color:#94a3b8; flex:1; }
+.tree-branch-row:hover .tree-branch-name,
+.tree-branch-row.selected .tree-branch-name { color:#d4a24c; }
+.branch-count-badge {
+  font-size:10px; background:#1e293b; color:#64748b;
+  border-radius:10px; padding:1px 7px;
+}
+
+/* MAIN */
+.main-content { margin-left:230px; padding:32px; width:100%; }
+.topbar { margin-bottom:24px; }
+.topbar h1 { font-family:'Playfair Display',serif; font-size:26px; color:#f1f5f9; }
+.topbar p { color:#64748b; font-size:14px; margin-top:4px; }
+
+/* ACTIVE TERM BANNER */
+.term-banner {
+  background:#1e293b; border:1px solid #334155;
+  border-radius:10px; padding:14px 20px;
+  display:flex; align-items:center; gap:16px;
+  margin-bottom:24px; flex-wrap:wrap;
+}
+.term-banner .tbl { font-size:13px; color:#94a3b8; }
+.term-banner .tbv {
+  font-size:15px; font-weight:700; color:#d4a24c;
+  font-family:'Playfair Display',serif;
+}
+.term-banner a {
+  margin-left:auto; font-size:12px; color:#64748b;
+  text-decoration:none; border:1px solid #334155;
+  padding:6px 12px; border-radius:6px; transition:all 0.2s;
+}
+.term-banner a:hover { color:#d4a24c; border-color:#d4a24c; }
+
+/* BROADSHEET */
+#welcomeScreen {
+  text-align:center; padding:80px 32px; color:#475569;
+}
+#welcomeScreen .big-icon { font-size:60px; margin-bottom:16px; }
+#welcomeScreen h3 { color:#94a3b8; font-size:18px; margin-bottom:8px; }
+
+#broadsheetArea { display:none; }
+
+.broadsheet-header {
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px; margin-bottom:20px;
+}
+.broadsheet-header h3 { margin-bottom:0; }
+
+.bs-tabs {
+  display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;
+}
+
+.bs-tab {
+  padding:8px 18px; border-radius:8px; border:1px solid #334155;
+  background:transparent; color:#94a3b8; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+  transition:all 0.2s;
+}
+.bs-tab:hover { border-color:#d4a24c; color:#d4a24c; }
+.bs-tab.active { background:#d4a24c; color:#0f172a; border-color:#d4a24c; }
+
+.bs-table-wrap { overflow-x:auto; }
+.bs-table { width:100%; border-collapse:collapse; font-size:13px; }
+.bs-table th {
+  background:#0f172a; color:#64748b; padding:10px 12px;
+  text-align:left; font-size:11px; text-transform:uppercase;
+  letter-spacing:0.05em; border-bottom:2px solid #334155; white-space:nowrap;
+}
+.bs-table td {
+  padding:11px 12px; border-bottom:1px solid #1e293b;
+  font-size:13px; vertical-align:middle;
+}
+.bs-table tr:hover td { background:#0f172a55; }
+.bs-table td a { color:#93c5fd; text-decoration:none; font-weight:600; cursor:pointer; }
+.bs-table td a:hover { color:#d4a24c; }
+
+.position-badge {
+  display:inline-block; padding:2px 10px;
+  border-radius:20px; font-size:11px; font-weight:700;
+}
+.pos-1 { background:#78350f; color:#fde68a; }
+.pos-2 { background:#374151; color:#e5e7eb; }
+.pos-3 { background:#431407; color:#fed7aa; }
+.pos-other { background:#1e293b; color:#94a3b8; }
+
+.grade-chip { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+.g-A { background:#14532d; color:#86efac; }
+.g-B { background:#1e3a5f; color:#93c5fd; }
+.g-C { background:#78350f; color:#fde68a; }
+.g-D { background:#431407; color:#fed7aa; }
+.g-F { background:#450a0a; color:#fca5a5; }
+
+/* REPORT CARD OVERLAY */
+#rcOverlay {
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.9); z-index:1000; overflow-y:auto; padding:32px;
+}
+
+.rc-overlay-controls {
+  display:flex; gap:12px; justify-content:center;
+  margin-bottom:24px; flex-wrap:wrap;
+}
+
+.btn-close-overlay {
+  padding:10px 22px; background:#334155; color:#e2e8f0;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+}
+.btn-close-overlay:hover { background:#475569; }
+
+.btn-pdf {
+  padding:10px 22px; background:#1e3a5f; color:#93c5fd;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+}
+.btn-pdf:hover { background:#1d4ed8; color:white; }
+
+.btn-print-rc {
+  padding:10px 22px; background:#14532d; color:#86efac;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+}
+.btn-print-rc:hover { background:#16a34a; color:white; }
+
+/* PROMOTION BUTTONS */
+.btn-promote {
+  padding:10px 22px; background:#1e3a5f; color:#93c5fd;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+  transition:all 0.2s;
+}
+.btn-promote:hover { background:#1d4ed8; color:white; }
+
+.btn-repeat {
+  padding:10px 22px; background:#450a0a; color:#fca5a5;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+  transition:all 0.2s;
+}
+.btn-repeat:hover { background:#dc2626; color:white; }
+
+.btn-graduate {
+  padding:10px 22px; background:#78350f; color:#fde68a;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+  transition:all 0.2s;
+}
+.btn-graduate:hover { background:#b45309; color:white; }
+
+.promotion-status-badge {
+  display:inline-block; padding:4px 12px; border-radius:20px;
+  font-size:11px; font-weight:700; margin-left:8px;
+}
+.promo-promoted  { background:#14532d; color:#86efac; }
+.promo-repeat    { background:#450a0a; color:#fca5a5; }
+.promo-graduated { background:#78350f; color:#fde68a; }
+
+/* REPORT CARD A4 */
+#reportCard {
+  width:210mm; min-height:297mm; background:#fff; color:#111;
+  padding:14mm 14mm 10mm; font-family:'DM Sans',sans-serif;
+  font-size:12px; margin:0 auto; position:relative;
+}
+
+#reportCard::before {
+  content:"CORONA MODEL COLLEGE";
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%) rotate(-35deg);
+  font-size:48px; font-family:'Playfair Display',serif; font-weight:900;
+  color:rgba(212,162,76,0.06); white-space:nowrap;
+  pointer-events:none; z-index:0;
+}
+
+.rc-header {
+  display:flex; align-items:center; gap:16px;
+  border-bottom:3px solid #1a3a5c;
+  padding-bottom:12px; margin-bottom:12px;
+}
+.rc-logo {
+  width:72px; height:72px; border:2px solid #1a3a5c; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; background:#f0f4ff; flex-shrink:0; overflow:hidden;
+}
+.rc-logo img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.rc-school-info { flex:1; text-align:center; }
+.rc-school-name {
+  font-family:'Playfair Display',serif; font-size:22px;
+  font-weight:900; color:#1a3a5c;
+}
+.rc-motto { font-style:italic; color:#b07d2a; font-size:11px; margin:3px 0; }
+.rc-contact { font-size:10px; color:#555; }
+.rc-address { font-size:10px; color:#555; margin-top:2px; }
+
+.rc-title-bar {
+  background:#1a3a5c; color:#fff; text-align:center;
+  padding:6px; font-weight:700; font-size:13px;
+  letter-spacing:1px; margin-bottom:12px; border-radius:3px;
+}
+
+.rc-student-row {
+  display:flex; gap:12px; margin-bottom:12px; align-items:flex-start;
+}
+.rc-student-photo {
+  width:80px; height:100px; border:2px solid #1a3a5c;
+  border-radius:4px; flex-shrink:0; background:#f0f4ff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:30px; color:#ccc; overflow:hidden;
+}
+.rc-student-photo img { width:100%; height:100%; object-fit:cover; }
+
+.rc-info-grid {
+  flex:1; display:grid; grid-template-columns:1fr 1fr; gap:6px 20px;
+}
+.rc-info-item { display:flex; flex-direction:column; }
+.rc-info-label {
+  font-size:9px; text-transform:uppercase; letter-spacing:0.05em;
+  color:#888; margin-bottom:1px;
+}
+.rc-info-value {
+  font-size:12px; font-weight:600; color:#111;
+  border-bottom:1px solid #ddd; padding-bottom:3px;
+}
+
+.rc-section-title {
+  background:#1a3a5c; color:#fff; padding:5px 10px;
+  font-size:11px; font-weight:700; letter-spacing:0.5px;
+  margin:14px 0 0; border-radius:3px 3px 0 0;
+}
+
+.rc-table { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:14px; }
+.rc-table th {
+  background:#eef2f7; color:#1a3a5c; padding:6px 8px;
+  text-align:left; font-weight:700; border:1px solid #cdd5e0;
+  font-size:10px; text-transform:uppercase;
+}
+.rc-table td { padding:6px 8px; border:1px solid #dde3ec; color:#222; }
+.rc-table tr:nth-child(even) td { background:#f8fafc; }
+
+.grade-A { color:#15803d; font-weight:700; }
+.grade-B { color:#1d4ed8; font-weight:700; }
+.grade-C { color:#b45309; font-weight:700; }
+.grade-D { color:#c2410c; font-weight:700; }
+.grade-F { color:#dc2626; font-weight:700; }
+
+.rc-summary {
+  display:grid; grid-template-columns:repeat(5,1fr);
+  gap:8px; margin:12px 0;
+}
+.rc-summary-box {
+  border:1px solid #cdd5e0; border-radius:4px; padding:8px; text-align:center;
+}
+.rc-summary-box .val {
+  font-size:16px; font-weight:700;
+  font-family:'Playfair Display',serif; color:#1a3a5c; line-height:1;
+}
+.rc-summary-box .lbl {
+  font-size:9px; color:#888; text-transform:uppercase;
+  letter-spacing:0.04em; margin-top:3px;
+}
+
+.rc-attend-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px; margin:8px 0 14px;
+}
+.rc-attend-box {
+  border:1px solid #cdd5e0; border-radius:4px; padding:8px; text-align:center;
+}
+.rc-attend-box .val {
+  font-size:16px; font-weight:700;
+  font-family:'Playfair Display',serif; color:#1a3a5c;
+}
+.rc-attend-box .lbl {
+  font-size:9px; color:#888; text-transform:uppercase; margin-top:3px;
+}
+
+.rc-grade-key {
+  display:flex; gap:8px; font-size:10px; color:#555;
+  margin-bottom:12px; flex-wrap:wrap;
+}
+.rc-grade-key span {
+  background:#f0f4ff; padding:3px 8px;
+  border-radius:3px; border:1px solid #dde3ec;
+}
+
+/* Promotion notice on printed card */
+.rc-promotion-notice {
+  border:2px solid #1a3a5c; border-radius:4px;
+  padding:10px 14px; margin:12px 0;
+  font-size:12px; font-weight:700; color:#1a3a5c;
+  text-align:center; background:#f0f4ff;
+}
+
+.rc-remarks {
+  border:1px solid #cdd5e0; border-radius:4px;
+  padding:10px; margin-bottom:12px;
+}
+.rc-remarks-label {
+  font-size:10px; text-transform:uppercase; color:#888; margin-bottom:6px;
+}
+.rc-remarks-line { border-bottom:1px solid #ddd; height:18px; margin-bottom:6px; }
+
+.rc-signatures {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:16px;
+}
+.rc-sig-box { text-align:center; }
+.rc-sig-line { border-bottom:1px solid #111; height:30px; margin-bottom:4px; }
+.rc-sig-label { font-size:9px; color:#555; text-transform:uppercase; letter-spacing:0.04em; }
+
+.rc-footer {
+  text-align:center; font-size:9px; color:#aaa;
+  margin-top:16px; border-top:1px solid #eee; padding-top:8px;
+}
+
+/* PROMOTION MODAL */
+.modal-overlay {
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.7); z-index:2000;
+  align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background:#1e293b; border:1px solid #334155; border-radius:16px;
+  padding:32px; max-width:480px; width:90%; position:relative;
+}
+.modal-box h3 { color:#d4a24c; margin-bottom:8px; font-family:'Playfair Display',serif; }
+.modal-box p  { color:#94a3b8; font-size:14px; margin-bottom:20px; }
+.modal-close {
+  position:absolute; top:16px; right:16px;
+  background:transparent; border:none; color:#64748b;
+  font-size:20px; cursor:pointer;
+}
+
+@media print {
+  body { background:#fff !important; display:block !important; }
+  #rcOverlay {
+    position:static !important; background:none !important; padding:0 !important;
+  }
+  .rc-overlay-controls { display:none !important; }
+  .sidebar, .main-content { display:none !important; }
+  #reportCard {
+    width:100% !important; min-height:auto !important;
+    padding:10mm !important; box-shadow:none !important; margin:0 !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <h2>School Admin</h2>
+  </div>
+  <nav>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="reportcard.html" class="active">📋 Report Cards</a>
+    <a href="alumni.html">🎓 Alumni</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </nav>
+  <div class="sidebar-divider">Classes</div>
+  <div id="sidebarTree"></div>
+  <button onclick="logout()" class="logout-btn" style="margin-top:24px;">⏻ Logout</button>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <div class="topbar">
+    <h1>📋 Report Cards</h1>
+    <p>Select a class, choose a term view, then click a student for their report card.</p>
+  </div>
+
+  <!-- ACTIVE TERM BANNER -->
+  <div class="term-banner" id="termBanner">
+    <div>
+      <div class="tbl">Active Term</div>
+      <div class="tbv" id="bannerTerm">Loading...</div>
+    </div>
+    <div>
+      <div class="tbl">Session</div>
+      <div class="tbv" id="bannerSession">—</div>
+    </div>
+    <a href="settings.html">⚙️ Change in Settings</a>
+  </div>
+
+  <!-- WELCOME -->
+  <div id="welcomeScreen">
+    <div class="big-icon">📋</div>
+    <h3>Select a class from the sidebar</h3>
+    <p>Choose a class to view the broadsheet and generate report cards.</p>
+  </div>
+
+  <!-- BROADSHEET -->
+  <div id="broadsheetArea">
+    <div class="card">
+      <div class="broadsheet-header">
+        <div>
+          <h3 id="broadsheetTitle">Class Broadsheet</h3>
+          <p style="color:#64748b;font-size:13px;margin-top:4px;" id="broadsheetSub"></p>
+        </div>
+        <input class="search-input" id="searchInput"
+          placeholder="🔍 Search name..." oninput="filterBroadsheet()">
+      </div>
+
+      <!-- TERM TABS -->
+      <div class="bs-tabs">
+        <button class="bs-tab active" onclick="switchTab('First Term',   this)">First Term</button>
+        <button class="bs-tab"        onclick="switchTab('Second Term',  this)">Second Term</button>
+        <button class="bs-tab"        onclick="switchTab('Third Term',   this)">Third Term</button>
+        <button class="bs-tab"        onclick="switchTab('Cumulative',   this)">📊 Cumulative</button>
+      </div>
+
+      <div class="bs-table-wrap">
+        <table class="bs-table">
+          <thead>
+            <tr>
+              <th>Position</th>
+              <th>Photo</th>
+              <th>Full Name</th>
+              <th>Status</th>
+              <th>Subjects</th>
+              <th>Total</th>
+              <th>Average</th>
+              <th>Grade</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="broadsheetBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT CARD OVERLAY -->
+<div id="rcOverlay">
+  <div class="rc-overlay-controls">
+    <button class="btn-close-overlay" onclick="closeRC()">✕ Close</button>
+    <button class="btn-print-rc"      onclick="window.print()">🖨️ Print</button>
+    <button class="btn-pdf"           onclick="downloadPDF()">⬇️ Download PDF</button>
+    <button class="btn-promote"       id="btnPromote"   onclick="openPromoteModal()">⬆️ Promote to Next Class</button>
+    <button class="btn-repeat"        id="btnRepeat"    onclick="markRepeat()">🔁 Repeat Class</button>
+    <button class="btn-graduate"      id="btnGraduate"  onclick="markGraduate()" style="display:none;">🎓 Mark as Graduated</button>
+    <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
+      <input type="file" id="logoInput" accept="image/*"
+        style="display:none;" onchange="uploadLogo(this)">
+      <button onclick="document.getElementById('logoInput').click()"
+        style="padding:8px 16px;background:#334155;border:none;color:#94a3b8;
+               border-radius:8px;cursor:pointer;font-size:13px;">
+        📁 Upload School Logo
+      </button>
+    </div>
+  </div>
+
+  <div id="reportCard">
+    <div class="rc-header">
+      <div class="rc-logo" id="schoolLogoBox">🎓</div>
+      <div class="rc-school-info">
+        <div class="rc-school-name">Corona Model College</div>
+        <div class="rc-motto">"Raising Great Minds!"</div>
+        <div class="rc-address">Ibeju, Lekki, Lagos Island, Lagos State.</div>
+        <div class="rc-contact">📞 +234 803 133 032 &nbsp;|&nbsp; ✉️ admin.coronaschools@gmail.com</div>
+      </div>
+    </div>
+
+    <div class="rc-title-bar" id="rcTitleBar">STUDENT REPORT CARD</div>
+
+    <div class="rc-student-row">
+      <div class="rc-student-photo" id="rcStudentPhoto">👤</div>
+      <div class="rc-info-grid"     id="rcInfoGrid"></div>
+    </div>
+
+    <div id="rcPromotionNotice"></div>
+
+    <div class="rc-section-title">📝 Academic Performance</div>
+    <table class="rc-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Subject</th>
+          <th>Score (%)</th><th>Grade</th><th>Remark</th>
+        </tr>
+      </thead>
+      <tbody id="rcResultsBody"></tbody>
+    </table>
+
+    <div class="rc-summary"     id="rcSummary"></div>
+
+    <div class="rc-grade-key">
+      <strong>Grade Key:</strong>
+      <span>A = 70–100 (Excellent)</span>
+      <span>B = 60–69 (Very Good)</span>
+      <span>C = 50–59 (Good)</span>
+      <span>D = 40–49 (Pass)</span>
+      <span>F = 0–39 (Fail)</span>
+    </div>
+
+    <div class="rc-section-title">📅 Attendance Summary</div>
+    <div class="rc-attend-grid" id="rcAttendance"></div>
+
+    <div class="rc-remarks">
+      <div class="rc-remarks-label">Class Teacher's Remark</div>
+      <div class="rc-remarks-line"></div>
+      <div class="rc-remarks-line"></div>
+    </div>
+
+    <div class="rc-signatures">
+      <div class="rc-sig-box">
+        <div class="rc-sig-line"></div>
+        <div class="rc-sig-label">Class Teacher</div>
+      </div>
+      <div class="rc-sig-box">
+        <div class="rc-sig-line"></div>
+        <div class="rc-sig-label">Head Teacher / Principal</div>
+      </div>
+      <div class="rc-sig-box">
+        <div class="rc-sig-line"></div>
+        <div class="rc-sig-label">Date Issued</div>
+      </div>
+    </div>
+
+    <div class="rc-footer">
+      Corona Model College &nbsp;|&nbsp; Ibeju, Lekki, Lagos Island, Lagos State &nbsp;|&nbsp;
+      +234 803 133 032 &nbsp;|&nbsp; admin.coronaschools@gmail.com
+    </div>
+  </div>
+</div>
+
+<!-- PROMOTE MODAL -->
+<div class="modal-overlay" id="promoteModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePromoteModal()">✕</button>
+    <h3>⬆️ Promote Student</h3>
+    <p id="promoteModalDesc">Select the class this student is being promoted to.</p>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label style="font-size:12px;color:#94a3b8;text-transform:uppercase;
+                    letter-spacing:0.05em;display:block;margin-bottom:6px;">
+        Destination Class
+      </label>
+      <select id="promoteDestClass" style="width:100%;padding:10px 14px;
+        background:#0f172a;border:1px solid #334155;border-radius:8px;
+        color:#e2e8f0;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+        <optgroup label="Basic School">
+          <option value="Basic 1A">Basic 1A</option>
+          <option value="Basic 1B">Basic 1B</option>
+          <option value="Basic 2A">Basic 2A</option>
+          <option value="Basic 2B">Basic 2B</option>
+          <option value="Basic 3A">Basic 3A</option>
+          <option value="Basic 3B">Basic 3B</option>
+        </optgroup>
+        <optgroup label="Senior Secondary">
+          <option value="SS 1 Art">SS 1 Art</option>
+          <option value="SS 1 Commercial">SS 1 Commercial</option>
+          <option value="SS 1 Science">SS 1 Science</option>
+          <option value="SS 2 Art">SS 2 Art</option>
+          <option value="SS 2 Commercial">SS 2 Commercial</option>
+          <option value="SS 2 Science">SS 2 Science</option>
+          <option value="SS 3 Art">SS 3 Art</option>
+          <option value="SS 3 Commercial">SS 3 Commercial</option>
+          <option value="SS 3 Science">SS 3 Science</option>
+        </optgroup>
+      </select>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <button onclick="confirmPromotion()" class="btn-primary" style="flex:1;">
+        ✅ Confirm Promotion
+      </button>
+      <button onclick="closePromoteModal()"
+        style="flex:1;padding:10px;background:transparent;border:1px solid #334155;
+               color:#94a3b8;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+
+import { collection, getDocs, doc, getDoc, updateDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const CLASS_GROUPS = [
+  { group:"Basic 1", branches:["Basic 1A","Basic 1B"] },
+  { group:"Basic 2", branches:["Basic 2A","Basic 2B"] },
+  { group:"Basic 3", branches:["Basic 3A","Basic 3B"] },
+  { group:"SS 1",    branches:["SS 1 Art","SS 1 Commercial","SS 1 Science"] },
+  { group:"SS 2",    branches:["SS 2 Art","SS 2 Commercial","SS 2 Science"] },
+  { group:"SS 3",    branches:["SS 3 Art","SS 3 Commercial","SS 3 Science"] }
+];
+
+const SS3_CLASSES = ["SS 3 Art","SS 3 Commercial","SS 3 Science"];
+
+let allStudents   = [];
+let allResults    = [];
+let allAttendance = [];
+let currentClass  = "";
+let currentTab    = "First Term";
+let activeSession = "";
+let activeTerm    = "First Term";
+let currentStudentId = "";
+let currentBroadsheet = [];
+
+// ── HELPERS ────────────────────────────────────────────
+function getGrade(score){
+  if(score>=70)return"A"; if(score>=60)return"B";
+  if(score>=50)return"C"; if(score>=40)return"D"; return"F";
+}
+function gradeRemark(g){
+  return g==="A"?"Excellent":g==="B"?"Very Good":
+         g==="C"?"Good":g==="D"?"Pass":"Fail";
+}
+function ordinal(n){
+  const s=["th","st","nd","rd"], v=n%100;
+  return n+(s[(v-20)%10]||s[v]||s[0]);
+}
+
+function calcStats(studentId, term){
+  // term = "First Term" | "Second Term" | "Third Term" | "Cumulative"
+  let results = [];
+  if(term === "Cumulative"){
+    results = allResults.filter(r => r.studentId === studentId);
+    // Average per subject across all terms
+    const bySubject = {};
+    results.forEach(r => {
+      if(!bySubject[r.subject]) bySubject[r.subject] = [];
+      bySubject[r.subject].push(r.score);
+    });
+    const averaged = Object.entries(bySubject).map(([subj, scores]) => ({
+      subject: subj,
+      score: scores.reduce((a,b)=>a+b,0) / scores.length,
+      grade: getGrade(scores.reduce((a,b)=>a+b,0) / scores.length)
+    }));
+    const total = averaged.reduce((a,b)=>a+b.score,0);
+    const avg   = averaged.length > 0 ? total/averaged.length : 0;
+    return { results: averaged, total: parseFloat(total.toFixed(1)),
+             avg: parseFloat(avg.toFixed(1)), count: averaged.length };
+  } else {
+    results = allResults.filter(r =>
+      r.studentId === studentId && r.term === term
+    );
+    const total = results.reduce((a,b)=>a+b.score,0);
+    const avg   = results.length > 0 ? total/results.length : 0;
+    return { results, total: parseFloat(total.toFixed(1)),
+             avg: parseFloat(avg.toFixed(1)), count: results.length };
+  }
+}
+
+// ── SIDEBAR TREE ───────────────────────────────────────
+function buildSidebarTree(){
+  const tree = document.getElementById("sidebarTree");
+  tree.innerHTML = "";
+  CLASS_GROUPS.forEach(group => {
+    const cnt   = allStudents.filter(s=>group.branches.includes(s.class)).length;
+    const gid   = "sg-"+group.group.replace(/\s/g,"-");
+    const el    = document.createElement("div");
+    el.className = "tree-group";
+    el.innerHTML = `
+      <div class="tree-group-row"
+           onclick="toggleSG('${gid}',this)">
+        <span class="tree-arrow" id="arr-${gid}">▶</span>
+        <span class="tree-group-name">${group.group}</span>
+        <span class="tree-total">${cnt}</span>
+      </div>
+      <div class="tree-branches" id="${gid}">
+        ${group.branches.map(b=>{
+          const bc = allStudents.filter(s=>s.class===b).length;
+          return `
+            <div class="tree-branch-row"
+                 onclick="selectBranch('${b}',this)"
+                 id="br-${b.replace(/\s/g,'-')}">
+              <span style="font-size:8px;color:#334155;">◆</span>
+              <span class="tree-branch-name">${b}</span>
+              <span class="branch-count-badge">${bc}</span>
+            </div>`;
+        }).join("")}
+      </div>`;
+    tree.appendChild(el);
+  });
+}
+
+window.toggleSG = function(id, row){
+  const el   = document.getElementById(id);
+  const arr  = document.getElementById("arr-"+id);
+  const open = el.style.display==="block";
+  el.style.display  = open?"none":"block";
+  arr.textContent   = open?"▶":"▼";
+  row.classList.toggle("open",!open);
+};
+
+window.selectBranch = function(branch, el){
+  document.querySelectorAll(".tree-branch-row")
+    .forEach(r=>r.classList.remove("selected"));
+  el.classList.add("selected");
+  currentClass = branch;
+  currentTab   = activeTerm; // default to active term
+  // Sync tab buttons
+  document.querySelectorAll(".bs-tab").forEach(t=>{
+    t.classList.toggle("active", t.textContent.trim()===currentTab ||
+      (currentTab==="Cumulative" && t.textContent.includes("Cumulative")));
+  });
+  loadBroadsheet();
+};
+
+// ── TAB SWITCH ─────────────────────────────────────────
+window.switchTab = function(term, btn){
+  currentTab = term;
+  document.querySelectorAll(".bs-tab")
+    .forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  loadBroadsheet();
+};
+
+// ── BROADSHEET ─────────────────────────────────────────
+window.loadBroadsheet = function(){
+  if(!currentClass) return;
+
+  const students = allStudents.filter(s =>
+    s.class === currentClass && s.status !== "graduated"
+  );
+
+  const ranked = students.map(s => {
+    const { avg, total, count } = calcStats(s.id, currentTab);
+    return { ...s, avg, total, count };
+  }).sort((a,b)=>b.avg-a.avg);
+
+  ranked.forEach((s,i)=>s.position=i+1);
+  currentBroadsheet = ranked;
+
+  document.getElementById("welcomeScreen").style.display  = "none";
+  document.getElementById("broadsheetArea").style.display = "block";
+  document.getElementById("broadsheetTitle").textContent  =
+    `🏫 ${currentClass} — ${currentTab} Broadsheet`;
+  document.getElementById("broadsheetSub").textContent    =
+    `${activeSession} · ${students.length} student${students.length!==1?"s":""}`;
+
+  renderBroadsheet(ranked);
+};
+
+function renderBroadsheet(list){
+  const tbody = document.getElementById("broadsheetBody");
+  tbody.innerHTML = "";
+
+  if(list.length===0){
+    tbody.innerHTML=`<tr><td colspan="9"
+      style="text-align:center;color:#475569;padding:32px;">
+      No students in this class.</td></tr>`;
+    return;
+  }
+
+  list.forEach(s=>{
+    const pc = s.position===1?"pos-1":s.position===2?"pos-2":
+               s.position===3?"pos-3":"pos-other";
+    const ag = s.avg>0?getGrade(s.avg):"—";
+    const gc = s.avg>0?"g-"+ag:"";
+
+    const photo = s.photo
+      ?`<img src="${s.photo}" style="width:36px;height:44px;object-fit:cover;
+          border-radius:4px;border:2px solid #d4a24c;">`
+      :`<div style="width:36px;height:44px;background:#0f172a;border-radius:4px;
+          display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>`;
+
+    let statusBadge = "";
+    if(s.promotionStatus==="promoted"){
+      statusBadge=`<span class="promotion-status-badge promo-promoted">
+        ⬆️ Promoted → ${s.promotedTo||""}</span>`;
+    } else if(s.promotionStatus==="repeat"){
+      statusBadge=`<span class="promotion-status-badge promo-repeat">🔁 Repeating</span>`;
+    }
+
+    tbody.innerHTML+=`
+      <tr>
+        <td><span class="position-badge ${pc}">${ordinal(s.position)}</span></td>
+        <td>${photo}</td>
+        <td>
+          <a onclick="generateRC('${s.id}')">${s.fullName||s.name||"—"}</a>
+          ${statusBadge}
+        </td>
+        <td style="color:#94a3b8;">${s.count}</td>
+        <td style="font-weight:600;">${s.total}</td>
+        <td style="font-weight:600;">${s.avg>0?s.avg:"—"}</td>
+        <td><span class="grade-chip ${gc}">${ag}</span></td>
+        <td>
+          <button onclick="generateRC('${s.id}')"
+            class="btn-primary" style="padding:5px 12px;font-size:12px;">
+            📋 Report Card
+          </button>
+        </td>
+      </tr>`;
+  });
+}
+
+window.filterBroadsheet = function(){
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  renderBroadsheet(q
+    ? currentBroadsheet.filter(s=>
+        (s.fullName||s.name||"").toLowerCase().includes(q))
+    : currentBroadsheet
+  );
+};
+
+// ── GENERATE REPORT CARD ───────────────────────────────
+window.generateRC = async function(studentId){
+  currentStudentId = studentId;
+  const student = allStudents.find(s=>s.id===studentId);
+  if(!student){ alert("Student not found."); return; }
+
+  const term = currentTab;
+
+  // Position in class (same tab)
+  const classStudents = allStudents.filter(s=>
+    s.class===student.class && s.status!=="graduated"
+  );
+  const ranked = classStudents.map(s=>{
+    const {avg} = calcStats(s.id, term);
+    return {id:s.id, avg};
+  }).sort((a,b)=>b.avg-a.avg);
+
+  const posIdx   = ranked.findIndex(s=>s.id===studentId);
+  const position = posIdx>=0?posIdx+1:"—";
+  const classSize = classStudents.length;
+
+  // Title
+  document.getElementById("rcTitleBar").textContent =
+    term==="Cumulative"
+      ? `CUMULATIVE REPORT CARD — ${activeSession}`
+      : `${term.toUpperCase()} REPORT CARD — ${activeSession}`;
+
+  // Photo
+  const pb = document.getElementById("rcStudentPhoto");
+  pb.innerHTML = student.photo
+    ? `<img src="${student.photo}" alt="passport">` : "👤";
+
+  // Promotion notice on card
+  const pn = document.getElementById("rcPromotionNotice");
+  if(student.promotionStatus==="promoted"){
+    pn.innerHTML=`<div class="rc-promotion-notice">
+      ✅ Promoted from ${student.class} to ${student.promotedTo}
+    </div>`;
+  } else if(student.promotionStatus==="repeat"){
+    pn.innerHTML=`<div class="rc-promotion-notice"
+      style="border-color:#c2410c;background:#fff7ed;color:#c2410c;">
+      🔁 Repeating ${student.class}
+    </div>`;
+  } else if(student.status==="graduated"){
+    pn.innerHTML=`<div class="rc-promotion-notice"
+      style="border-color:#b07d2a;background:#fffbeb;color:#b07d2a;">
+      🎓 Graduated — ${student.graduationYear||""}
+    </div>`;
+  } else {
+    pn.innerHTML="";
+  }
+
+  // Info grid
+  document.getElementById("rcInfoGrid").innerHTML=`
+    <div class="rc-info-item">
+      <span class="rc-info-label">Full Name</span>
+      <span class="rc-info-value">${student.fullName||student.name||"—"}</span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Class</span>
+      <span class="rc-info-value">${student.class||"—"}</span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Term / View</span>
+      <span class="rc-info-value">${term}</span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Session</span>
+      <span class="rc-info-value">${activeSession}</span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Position in Class</span>
+      <span class="rc-info-value" style="color:#b07d2a;font-weight:700;">
+        ${position!=="—"?ordinal(position)+" of "+classSize:"—"}
+      </span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Blood Group</span>
+      <span class="rc-info-value">${student.bloodGroup||"—"}</span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Height</span>
+      <span class="rc-info-value">${student.height?student.height+" cm":"—"}</span>
+    </div>
+    <div class="rc-info-item">
+      <span class="rc-info-label">Parent Contact</span>
+      <span class="rc-info-value">${student.parentPhone1||"—"}</span>
+    </div>
+  `;
+
+  // Results
+  const { results, total, avg, count } = calcStats(studentId, term);
+  const tbody = document.getElementById("rcResultsBody");
+  tbody.innerHTML="";
+
+  if(results.length===0){
+    tbody.innerHTML=`<tr><td colspan="5"
+      style="text-align:center;color:#999;padding:16px;">
+      No results recorded for ${term}.</td></tr>`;
+  } else {
+    results.forEach((r,i)=>{
+      const g = r.grade||getGrade(r.score);
+      tbody.innerHTML+=`
+        <tr>
+          <td>${i+1}</td>
+          <td>${r.subject}</td>
+          <td style="text-align:center;">${typeof r.score==="number"?r.score.toFixed(1):r.score}</td>
+          <td style="text-align:center;" class="grade-${g}">${g}</td>
+          <td>${gradeRemark(g)}</td>
+        </tr>`;
+    });
+  }
+
+  const ag = count>0?getGrade(avg):"—";
+  const hi = results.length>0?Math.max(...results.map(r=>r.score)).toFixed(1):"—";
+  const lo = results.length>0?Math.min(...results.map(r=>r.score)).toFixed(1):"—";
+
+  document.getElementById("rcSummary").innerHTML=`
+    <div class="rc-summary-box">
+      <div class="val">${count}</div><div class="lbl">Subjects</div>
+    </div>
+    <div class="rc-summary-box">
+      <div class="val">${total}</div><div class="lbl">Total Score</div>
+    </div>
+    <div class="rc-summary-box">
+      <div class="val">${avg>0?avg:"—"}</div><div class="lbl">Average</div>
+    </div>
+    <div class="rc-summary-box">
+      <div class="val grade-${ag}">${ag}</div><div class="lbl">Overall Grade</div>
+    </div>
+    <div class="rc-summary-box">
+      <div class="val" style="color:#b07d2a;">
+        ${position!=="—"?ordinal(position):"—"}
+      </div>
+      <div class="lbl">Class Position</div>
+    </div>`;
+
+  // Attendance
+  const att = allAttendance.filter(a=>
+    a.studentId===studentId &&
+    (term==="Cumulative" || a.term===term) &&
+    a.session===activeSession
+  );
+  const present = att.filter(a=>a.status==="Present").length;
+  const absent  = att.filter(a=>a.status==="Absent").length;
+  const total2  = present+absent;
+  const rate    = total2>0?Math.round((present/total2)*100)+"%":"—";
+
+  document.getElementById("rcAttendance").innerHTML=`
+    <div class="rc-attend-box">
+      <div class="val" style="color:#15803d;">${present}</div>
+      <div class="lbl">Days Present</div>
+    </div>
+    <div class="rc-attend-box">
+      <div class="val" style="color:#dc2626;">${absent}</div>
+      <div class="lbl">Days Absent</div>
+    </div>
+    <div class="rc-attend-box">
+      <div class="val">${rate}</div>
+      <div class="lbl">Attendance Rate</div>
+    </div>`;
+
+  // Show/hide buttons based on class & status
+  const isGraduated = student.status==="graduated";
+  const isSS3       = SS3_CLASSES.includes(student.class);
+  const hasPromo    = !!student.promotionStatus;
+
+  document.getElementById("btnPromote").style.display  =
+    (!isGraduated && !isSS3 && term==="Cumulative") ? "inline-block":"none";
+  document.getElementById("btnRepeat").style.display   =
+    (!isGraduated && term==="Cumulative") ? "inline-block":"none";
+  document.getElementById("btnGraduate").style.display =
+    (isSS3 && !isGraduated && term==="Cumulative") ? "inline-block":"none";
+
+  document.getElementById("rcOverlay").style.display = "block";
+  document.body.style.overflow = "hidden";
+};
+
+// ── PROMOTION ──────────────────────────────────────────
+window.openPromoteModal = function(){
+  const student = allStudents.find(s=>s.id===currentStudentId);
+  document.getElementById("promoteModalDesc").textContent =
+    `Promoting: ${student?.fullName||student?.name||""}
+     (currently in ${student?.class||""})`;
+  document.getElementById("promoteModal").classList.add("open");
+};
+
+window.closePromoteModal = function(){
+  document.getElementById("promoteModal").classList.remove("open");
+};
+
+window.confirmPromotion = async function(){
+  const db        = window.db;
+  const destClass = document.getElementById("promoteDestClass").value;
+  const student   = allStudents.find(s=>s.id===currentStudentId);
+
+  if(destClass===student.class){
+    alert("Destination class is the same as current class. Please choose a different class.");
+    return;
+  }
+
+  await updateDoc(doc(db, "students", currentStudentId), {
+    class:           destClass,
+    previousClass:   student.class,
+    promotionStatus: "promoted",
+    promotedTo:      destClass,
+    promotedFrom:    student.class,
+    promotedSession: activeSession
+  });
+
+  alert(`✅ ${student.fullName||student.name} promoted from ${student.class} to ${destClass}.\n\nThis is now reflected across all sections.`);
+
+  closePromoteModal();
+  closeRC();
+  await reloadData();
+  buildSidebarTree();
+  loadBroadsheet();
+};
+
+window.markRepeat = async function(){
+  const db      = window.db;
+  const student = allStudents.find(s=>s.id===currentStudentId);
+  if(!confirm(`Mark ${student?.fullName||student?.name} as Repeating ${student?.class}?`)) return;
+
+  await updateDoc(doc(db, "students", currentStudentId), {
+    promotionStatus: "repeat",
+    repeatSession:   activeSession
+  });
+
+  alert(`🔁 ${student.fullName||student.name} will repeat ${student.class}.`);
+  closeRC();
+  await reloadData();
+  loadBroadsheet();
+};
+
+window.markGraduate = async function(){
+  const db      = window.db;
+  const student = allStudents.find(s=>s.id===currentStudentId);
+  const year    = new Date().getFullYear();
+
+  if(!confirm(`Mark ${student?.fullName||student?.name} as Graduated?\n\nTheir profile and records will be preserved in the Alumni section.`)) return;
+
+  await updateDoc(doc(db, "students", currentStudentId), {
+    status:           "graduated",
+    graduatedClass:   student.class,
+    graduationYear:   year,
+    graduatedSession: activeSession,
+    promotionStatus:  "graduated"
+  });
+
+  alert(`🎓 ${student.fullName||student.name} has been graduated and moved to the Alumni database.`);
+  closeRC();
+  await reloadData();
+  buildSidebarTree();
+  loadBroadsheet();
+};
+
+// ── CLOSE / PRINT / PDF ────────────────────────────────
+window.closeRC = function(){
+  document.getElementById("rcOverlay").style.display="none";
+  document.body.style.overflow="";
+};
+
+window.downloadPDF = function(){
+  const s    = allStudents.find(s=>s.id===currentStudentId);
+  const name = s?(s.fullName||s.name):"Student";
+  html2pdf().set({
+    margin:[5,5,5,5],
+    filename:`ReportCard_${name}_${currentTab}.pdf`,
+    image:{type:"jpeg",quality:0.98},
+    html2canvas:{scale:2,useCORS:true},
+    jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+  }).from(document.getElementById("reportCard")).save();
+};
+
+window.uploadLogo = function(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    document.getElementById("schoolLogoBox").innerHTML=
+      `<img src="${e.target.result}" alt="logo">`;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.logout = function(){
+  signOut(window.auth).then(()=>window.location.href="login.html");
+};
+
+// ── RELOAD DATA ────────────────────────────────────────
+async function reloadData(){
+  const db = window.db;
+  const [ss, rs, as] = await Promise.all([
+    getDocs(collection(db,"students")),
+    getDocs(collection(db,"results")),
+    getDocs(collection(db,"attendance"))
+  ]);
+  allStudents   = []; ss.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+  allResults    = []; rs.forEach(d=>allResults.push({id:d.id,...d.data()}));
+  allAttendance = []; as.forEach(d=>allAttendance.push({id:d.id,...d.data()}));
+}
+
+// ── INIT ───────────────────────────────────────────────
+setTimeout(async()=>{
+  const db   = window.db;
+  const auth = window.auth;
+
+  onAuthStateChanged(auth, u=>{
+    if(!u) window.location.href="login.html";
+  });
+
+  // Load school settings
+  try {
+    const settingSnap = await getDoc(doc(db,"settings","school"));
+    if(settingSnap.exists()){
+      const sd = settingSnap.data();
+      activeTerm    = sd.term    || "First Term";
+      activeSession = sd.session || "";
+      currentTab    = activeTerm;
+    }
+  } catch(e){}
+
+  document.getElementById("bannerTerm").textContent    = activeTerm;
+  document.getElementById("bannerSession").textContent = activeSession||"Not set";
+
+  // Sync tab button
+  document.querySelectorAll(".bs-tab").forEach(t=>{
+    t.classList.toggle("active",
+      t.textContent.trim()===activeTerm ||
+      (activeTerm==="Cumulative"&&t.textContent.includes("Cumulative"))
+    );
+  });
+
+  await reloadData();
+  buildSidebarTree();
+
+},1000);
+</script>
+</body>
+</html>

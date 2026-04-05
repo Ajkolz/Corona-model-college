@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Corona Model College – Ibeju Lekki, Lagos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description"
+  content="Corona Model College – A premier secondary school in Ibeju Lekki, Lagos. Raising Great Minds.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --gold:   #d4a24c;
+  --dark:   #0f172a;
+  --darker: #020617;
+  --mid:    #1e293b;
+  --border: #334155;
+  --text:   #e2e8f0;
+  --muted:  #94a3b8;
+}
+
+html { scroll-behavior: smooth; }
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background: var(--darker);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ── NAV ── */
+nav.top-nav{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: rgba(2,6,23,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 0 5%;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  gap: 24px;
+}
+
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+  flex: 1;
+}
+
+.nav-links{
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a{
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover{ color: var(--gold); }
+
+.nav-login{
+  padding: 8px 20px;
+  background: var(--gold);
+  color: var(--darker);
+  border: none;
+  border-radius: 8px;
+  font-family:'DM Sans',sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.nav-login:hover{ opacity: 0.85; }
+
+.mobile-menu-btn{
+  display: none;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* ── HERO ── */
+.hero{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 5% 60px;
+  background:
+    radial-gradient(ellipse at 20% 50%,
+      rgba(212,162,76,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%,
+      rgba(59,130,246,0.05) 0%, transparent 50%),
+    var(--darker);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a24c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.hero-logo{
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  background: var(--mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin: 0 auto 28px;
+  box-shadow: 0 0 40px rgba(212,162,76,0.15);
+}
+
+.hero-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size: clamp(32px,6vw,64px);
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.hero-motto{
+  font-family:'Cormorant Garamond',serif;
+  font-style: italic;
+  font-size: clamp(16px,2.5vw,22px);
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.hero-address{
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 40px;
+}
+
+.hero-btns{
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-hero-primary{
+  padding: 14px 32px;
+  background: var(--gold);
+  color: var(--darker);
+  border: none;
+  border-radius: 10px;
+  font-family:'DM Sans',sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.btn-hero-primary:hover{ opacity: 0.85; }
+
+.btn-hero-outline{
+  padding: 14px 32px;
+  background: transparent;
+  color: var(--gold);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  font-family:'DM Sans',sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-hero-outline:hover{
+  background: rgba(212,162,76,0.1);
+}
+
+/* ── SECTIONS ── */
+section{
+  padding: 80px 5%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.section-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size: clamp(28px,4vw,44px);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.section-body{
+  color: var(--muted);
+  font-size: 16px;
+  max-width: 680px;
+  line-height: 1.8;
+}
+
+/* DIVIDER */
+.section-divider-line{
+  height: 1px;
+  background: var(--border);
+  margin: 0 5%;
+}
+
+/* ── FEATURES GRID ── */
+.features-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.feature-card{
+  background: var(--mid);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.feature-card:hover{
+  border-color: var(--gold);
+  transform: translateY(-3px);
+}
+
+.feature-icon{
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.feature-title{
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.feature-desc{
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  background: var(--mid);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 32px 20px;
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.stat-item{ text-align: center; }
+
+.stat-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.stat-lbl{
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── ANNOUNCEMENTS ── */
+.public-ann-list{ margin-top: 32px; }
+
+.public-ann-card{
+  background: var(--mid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+
+.public-ann-card:hover{ border-color: var(--gold); }
+
+.public-ann-date{
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.public-ann-title{
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.public-ann-body{
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── CONTACT ── */
+.contact-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+.contact-item{
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.contact-icon{
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contact-label{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.contact-val{
+  font-size: 15px;
+  color: var(--text);
+}
+
+/* CONTACT FORM */
+.contact-form{
+  background: var(--mid);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.contact-form input,
+.contact-form textarea{
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus{ border-color: var(--gold); }
+
+.contact-form textarea{ resize: vertical; min-height: 120px; }
+
+/* ── FOOTER ── */
+footer{
+  background: var(--darker);
+  border-top: 1px solid var(--border);
+  padding: 40px 5%;
+  text-align: center;
+}
+
+.footer-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size: 22px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.footer-text{
+  font-size: 13px;
+  color: #334155;
+}
+
+.footer-links{
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.footer-links a{
+  color: #475569;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover{ color: var(--gold); }
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .nav-links{ display: none; }
+  .mobile-menu-btn{ display: block; }
+  .contact-grid{ grid-template-columns: 1fr; }
+  .hero-logo{ width:80px; height:80px; font-size:36px; }
+  .stats-bar{ gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-logo">Corona Model College</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#features">Why Us</a></li>
+    <li><a href="#notices">Notices</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="login.html" class="nav-login">Portal Login →</a>
+  <button class="mobile-menu-btn" onclick="toggleMobileNav()">☰</button>
+</nav>
+
+<!-- MOBILE NAV DROPDOWN -->
+<div id="mobileNav" style="display:none;position:fixed;top:64px;left:0;right:0;
+  background:#020617;border-bottom:1px solid #334155;z-index:99;padding:16px 5%;">
+  <a href="#about" onclick="toggleMobileNav()"
+    style="display:block;padding:10px 0;color:#94a3b8;text-decoration:none;
+    border-bottom:1px solid #1e293b;">About</a>
+  <a href="#features" onclick="toggleMobileNav()"
+    style="display:block;padding:10px 0;color:#94a3b8;text-decoration:none;
+    border-bottom:1px solid #1e293b;">Why Us</a>
+  <a href="#notices" onclick="toggleMobileNav()"
+    style="display:block;padding:10px 0;color:#94a3b8;text-decoration:none;
+    border-bottom:1px solid #1e293b;">Notices</a>
+  <a href="#contact" onclick="toggleMobileNav()"
+    style="display:block;padding:10px 0;color:#94a3b8;text-decoration:none;">Contact</a>
+  <a href="login.html"
+    style="display:block;margin-top:12px;padding:12px;background:#d4a24c;
+    color:#0f172a;text-align:center;border-radius:8px;font-weight:700;
+    text-decoration:none;">Portal Login →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-logo">🎓</div>
+  <h1 class="hero-name">Corona Model College</h1>
+  <p class="hero-motto">"Raising Great Minds!"</p>
+  <p class="hero-address">
+    Ibeju, Lekki, Lagos Island, Lagos State<br>
+    📞 +234 803 133 032 &nbsp;·&nbsp; ✉️ admin.coronaschools@gmail.com
+  </p>
+  <div class="hero-btns">
+    <a href="#contact" class="btn-hero-primary">📩 Enquire for Admission</a>
+    <a href="login.html" class="btn-hero-outline">🔑 Portal Login</a>
+  </div>
+
+  <!-- LIVE STATS -->
+  <div class="stats-bar" style="max-width:700px;margin-top:48px;">
+    <div class="stat-item">
+      <div class="stat-num" id="pubStatStudents">—</div>
+      <div class="stat-lbl">Active Students</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="pubStatClasses">15</div>
+      <div class="stat-lbl">Classes</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="pubStatAlumni">—</div>
+      <div class="stat-lbl">Proud Alumni</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">A+</div>
+      <div class="stat-lbl">Academic Standard</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider-line"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About Us</div>
+  <h2 class="section-title">A School Built for Excellence</h2>
+  <p class="section-body">
+    Corona Model College is a premier private school located in the heart of
+    Ibeju Lekki, Lagos State. We are committed to providing a world-class
+    education that nurtures academic excellence, moral values and leadership
+    skills in every student from Basic School through to Senior Secondary level.
+  </p>
+  <p class="section-body" style="margin-top:16px;">
+    Our dedicated faculty, modern facilities and structured curriculum ensure
+    that every child reaches their full potential — academically, socially and
+    personally.
+  </p>
+</section>
+
+<div class="section-divider-line"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">Why Corona Model</div>
+  <h2 class="section-title">What Makes Us Different</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📚</div>
+      <div class="feature-title">Structured Curriculum</div>
+      <div class="feature-desc">
+        From Basic 1 through SS 3, our curriculum is designed to build
+        strong foundations and prepare students for national examinations.
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👨‍🏫</div>
+      <div class="feature-title">Dedicated Teachers</div>
+      <div class="feature-desc">
+        Our class teachers are committed, trained professionals who track
+        each student's progress through attendance, assessments and results.
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">Parent Portal Access</div>
+      <div class="feature-desc">
+        Parents receive SMS alerts on school announcements and can access
+        their child's results, attendance and fee status online at any time.
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Digital Report Cards</div>
+      <div class="feature-desc">
+        End of term report cards are generated digitally with class position,
+        attendance rates and subject-by-subject performance.
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏫</div>
+      <div class="feature-title">Modern Facilities</div>
+      <div class="feature-desc">
+        Classrooms, science labs, computer rooms and a safe learning
+        environment designed to inspire curiosity and achievement.
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎓</div>
+      <div class="feature-title">Strong Alumni Network</div>
+      <div class="feature-desc">
+        Our graduates go on to top universities across Nigeria and abroad.
+        Their records are preserved and celebrated in our Alumni database.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider-line"></div>
+
+<!-- PUBLIC NOTICES -->
+<section id="notices">
+  <div class="section-label">Notice Board</div>
+  <h2 class="section-title">Latest Announcements</h2>
+  <p class="section-body">School notices and updates from the administration.</p>
+
+  <div class="public-ann-list" id="publicAnnList">
+    <p style="color:#475569;text-align:center;padding:32px;">
+      Loading notices...
+    </p>
+  </div>
+</section>
+
+<div class="section-divider-line"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">Get in Touch</div>
+  <h2 class="section-title">Contact Us</h2>
+
+  <div class="contact-grid">
+    <div>
+      <div class="contact-item" style="margin-bottom:24px;">
+        <div class="contact-icon">📍</div>
+        <div>
+          <div class="contact-label">Address</div>
+          <div class="contact-val">
+            Ibeju, Lekki, Lagos Island,<br>Lagos State, Nigeria
+          </div>
+        </div>
+      </div>
+      <div class="contact-item" style="margin-bottom:24px;">
+        <div class="contact-icon">📞</div>
+        <div>
+          <div class="contact-label">Phone</div>
+          <div class="contact-val">+234 803 133 032</div>
+        </div>
+      </div>
+      <div class="contact-item" style="margin-bottom:24px;">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <div class="contact-label">Email</div>
+          <div class="contact-val">admin.coronaschools@gmail.com</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🕐</div>
+        <div>
+          <div class="contact-label">School Hours</div>
+          <div class="contact-val">Monday – Friday: 7:30am – 3:30pm</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENQUIRY FORM -->
+    <div class="contact-form">
+      <h3 style="color:#d4a24c;font-family:'Cormorant Garamond',serif;
+        font-size:20px;margin-bottom:16px;">Admission Enquiry</h3>
+      <input id="enquiryName" placeholder="Parent / Guardian Name">
+      <input id="enquiryPhone" placeholder="Phone Number">
+      <input id="enquiryEmail" type="email" placeholder="Email Address">
+      <input id="enquiryChild" placeholder="Child's Name & Age">
+      <textarea id="enquiryMessage"
+        placeholder="Your message or questions..."></textarea>
+      <button onclick="submitEnquiry()"
+        style="width:100%;padding:12px;background:#d4a24c;color:#0f172a;
+        border:none;border-radius:8px;font-weight:700;font-size:15px;
+        cursor:pointer;font-family:'DM Sans',sans-serif;">
+        Send Enquiry →
+      </button>
+      <div id="enquiryResult" style="display:none;margin-top:12px;
+        padding:10px;border-radius:8px;font-size:14px;
+        background:#14532d;color:#86efac;text-align:center;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">Corona Model College</div>
+  <div class="footer-links">
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#notices">Notices</a>
+    <a href="#contact">Contact</a>
+    <a href="login.html">Portal Login</a>
+  </div>
+  <div class="footer-text">
+    © 2025 Corona Model College · Ibeju, Lekki, Lagos · All rights reserved.
+  </div>
+</footer>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import { collection, getDocs, addDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+window.toggleMobileNav = function(){
+  const nav = document.getElementById("mobileNav");
+  nav.style.display = nav.style.display==="none" ? "block" : "none";
+};
+
+// Close mobile nav on scroll
+window.addEventListener("scroll",()=>{
+  document.getElementById("mobileNav").style.display="none";
+});
+
+setTimeout(async()=>{
+  const db = window.db;
+
+  // Live stats
+  try {
+    const snap = await getDocs(collection(db,"students"));
+    let active=0, alumni=0;
+    snap.forEach(d=>{
+      d.data().status==="graduated" ? alumni++ : active++;
+    });
+    document.getElementById("pubStatStudents").textContent = active;
+    document.getElementById("pubStatAlumni").textContent   = alumni;
+  } catch(e){}
+
+  // Public notices (latest 5, general/events/urgent only)
+  try {
+    const snap = await getDocs(collection(db,"announcements"));
+    let anns=[];
+    snap.forEach(d=>anns.push({id:d.id,...d.data()}));
+    anns.sort((a,b)=>new Date(b.postedAt)-new Date(a.postedAt));
+    anns = anns.slice(0,5);
+
+    const list = document.getElementById("publicAnnList");
+    if(anns.length===0){
+      list.innerHTML=`<p style="color:#475569;text-align:center;padding:32px;">
+        No public notices at this time.</p>`;
+    } else {
+      list.innerHTML = anns.map(a=>{
+        const date=new Date(a.postedAt).toLocaleDateString("en-NG",{
+          day:"numeric",month:"long",year:"numeric"
+        });
+        return `
+          <div class="public-ann-card">
+            <div class="public-ann-date">${date}</div>
+            <div class="public-ann-title">${a.title}</div>
+            <div class="public-ann-body">${a.body.replace(/\n/g,"<br>")}</div>
+          </div>`;
+      }).join("");
+    }
+  } catch(e){}
+
+  // Enquiry form
+  window.submitEnquiry = async function(){
+    const name    = document.getElementById("enquiryName").value.trim();
+    const phone   = document.getElementById("enquiryPhone").value.trim();
+    const email   = document.getElementById("enquiryEmail").value.trim();
+    const child   = document.getElementById("enquiryChild").value.trim();
+    const message = document.getElementById("enquiryMessage").value.trim();
+    const resEl   = document.getElementById("enquiryResult");
+
+    if(!name||!phone){
+      alert("Please enter your name and phone number.");
+      return;
+    }
+
+    await addDoc(collection(db,"enquiries"),{
+      name, phone, email, child, message,
+      submittedAt: new Date().toISOString(),
+      status: "new"
+    });
+
+    ["enquiryName","enquiryPhone","enquiryEmail",
+     "enquiryChild","enquiryMessage"].forEach(id=>{
+      document.getElementById(id).value="";
+    });
+
+    resEl.style.display = "block";
+    resEl.textContent   = "✅ Thank you! We'll be in touch soon.";
+    setTimeout(()=>resEl.style.display="none",5000);
+  };
+
+},500);
+</script>
+</body>
+</html>

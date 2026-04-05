@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Request Announcement – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <div>
+      <h2>Corona Model</h2>
+      <span style="font-size:10px;color:#475569;" id="teacherLabel">Teacher</span>
+    </div>
+  </div>
+  <nav>
+    <a href="teacher-dashboard.html">📊 My Class</a>
+    <a href="teacher-announcements.html" class="active">📢 Announcements</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">Announcements</span>
+</div>
+
+<div class="main-content">
+
+  <div class="topbar">
+    <h1>📢 Announcements</h1>
+    <p class="topbar-sub">View school notices and request announcements from admin.</p>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('board',this)">📋 Notice Board</button>
+    <button class="tab-btn" onclick="showTab('request',this)">📨 Request Announcement</button>
+    <button class="tab-btn" onclick="showTab('myrequests',this)">📬 My Requests</button>
+  </div>
+
+  <!-- NOTICE BOARD -->
+  <div id="tab-board" class="tab-content">
+    <div class="card">
+      <h3>📋 School Notice Board</h3>
+      <div id="teacherBoardList">
+        <p style="color:#64748b;text-align:center;padding:32px;">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUEST FORM -->
+  <div id="tab-request" class="tab-content" style="display:none;">
+    <div class="card">
+      <h3>📨 Request an Announcement</h3>
+      <p style="color:#94a3b8;font-size:14px;margin-bottom:20px;">
+        Your request will be reviewed by the admin before being posted.
+      </p>
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Title</label>
+        <input id="reqTitle" placeholder="e.g. Class trip permission reminder">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Message</label>
+        <textarea id="reqBody" rows="5"
+          placeholder="Type your announcement request..."
+          style="width:100%;padding:12px 14px;background:#0f172a;
+          border:1px solid #334155;border-radius:8px;color:#e2e8f0;
+          font-family:'DM Sans',sans-serif;font-size:14px;
+          outline:none;resize:vertical;"></textarea>
+      </div>
+
+      <button onclick="submitRequest()" class="btn-primary">
+        📨 Submit Request to Admin
+      </button>
+
+      <div id="reqResult" style="display:none;margin-top:14px;
+        padding:12px;border-radius:8px;font-size:14px;"></div>
+    </div>
+  </div>
+
+  <!-- MY REQUESTS -->
+  <div id="tab-myrequests" class="tab-content" style="display:none;">
+    <div class="card">
+      <h3>📬 My Requests</h3>
+      <div id="myRequestsList">
+        <p style="color:#64748b;text-align:center;padding:24px;">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import {
+  collection, getDocs, addDoc, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("teacher");
+if(!session) throw new Error("Not authorised");
+
+document.getElementById("teacherLabel").textContent = session.className;
+
+window.doLogout = function(){
+  signOut(window.auth).then(()=>{
+    window.clearSession();
+    window.location.href = "login.html";
+  });
+};
+window.toggleSidebar = function(){
+  document.getElementById("sidebar").classList.toggle("open");
+};
+window.showTab = function(tab, btn){
+  document.querySelectorAll(".tab-content")
+    .forEach(t => t.style.display="none");
+  document.querySelectorAll(".tab-btn")
+    .forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-"+tab).style.display="block";
+  if(btn) btn.classList.add("active");
+  if(tab==="myrequests") loadMyRequests();
+};
+
+setTimeout(async()=>{
+  const db = window.db;
+
+  // Load notice board
+  const snap = await getDocs(collection(db,"announcements"));
+  let announcements = [];
+  snap.forEach(d => announcements.push({id:d.id,...d.data()}));
+  announcements.sort((a,b)=>new Date(b.postedAt)-new Date(a.postedAt));
+
+  const catEmoji = {
+    general:"📢",exams:"📝",fees:"💰",
+    events:"🎉",holiday:"🏖️",urgent:"🚨"
+  };
+
+  const list = document.getElementById("teacherBoardList");
+  if(announcements.length===0){
+    list.innerHTML=`<p style="color:#64748b;text-align:center;padding:32px;">
+      No announcements yet.</p>`;
+  } else {
+    list.innerHTML = announcements.map(a=>{
+      const date = new Date(a.postedAt).toLocaleDateString("en-NG",{
+        day:"numeric",month:"long",year:"numeric"
+      });
+      return `
+        <div class="ann-card">
+          <div class="ann-card-header">
+            <span class="ann-category-badge">
+              ${catEmoji[a.category]||"📢"}
+              ${a.category.charAt(0).toUpperCase()+a.category.slice(1)}
+            </span>
+            <span style="font-size:12px;color:#475569;margin-left:auto;">${date}</span>
+          </div>
+          <h4 class="ann-title">${a.title}</h4>
+          <p class="ann-body">${a.body.replace(/\n/g,"<br>")}</p>
+        </div>`;
+    }).join("");
+  }
+
+  // Submit request
+  window.submitRequest = async function(){
+    const title = document.getElementById("reqTitle").value.trim();
+    const body  = document.getElementById("reqBody").value.trim();
+    const resEl = document.getElementById("reqResult");
+
+    if(!title||!body){
+      alert("Please fill in the title and message.");
+      return;
+    }
+
+    await addDoc(collection(db,"announcementRequests"),{
+      title, body,
+      teacherClass: session.className,
+      status:       "pending",
+      requestedAt:  new Date().toISOString()
+    });
+
+    document.getElementById("reqTitle").value="";
+    document.getElementById("reqBody").value="";
+
+    resEl.style.display    = "block";
+    resEl.style.background = "#14532d";
+    resEl.style.color      = "#86efac";
+    resEl.textContent      = "✅ Request submitted. Admin will review it shortly.";
+    setTimeout(()=>resEl.style.display="none",4000);
+    loadMyRequests();
+  };
+
+  async function loadMyRequests(){
+    const snap = await getDocs(collection(db,"announcementRequests"));
+    const list = document.getElementById("myRequestsList");
+    list.innerHTML="";
+    let reqs=[];
+    snap.forEach(d=>{
+      const data=d.data();
+      if(data.teacherClass===session.className) reqs.push({id:d.id,...data});
+    });
+    reqs.sort((a,b)=>new Date(b.requestedAt)-new Date(a.requestedAt));
+
+    if(reqs.length===0){
+      list.innerHTML=`<p style="color:#64748b;text-align:center;padding:24px;">
+        No requests yet.</p>`;
+      return;
+    }
+
+    const statusColor={
+      pending:"#f59e0b",approved:"#22c55e",rejected:"#ef4444"
+    };
+
+    list.innerHTML = reqs.map(r=>{
+      const date=new Date(r.requestedAt).toLocaleDateString("en-NG",{
+        day:"numeric",month:"short",year:"numeric"
+      });
+      const color = statusColor[r.status||"pending"]||"#f59e0b";
+      return `
+        <div class="ann-card">
+          <div class="ann-card-header">
+            <span style="font-size:12px;color:#64748b;">${date}</span>
+            <span style="font-size:12px;font-weight:700;color:${color};
+              margin-left:auto;">
+              ${(r.status||"pending").toUpperCase()}
+            </span>
+          </div>
+          <h4 class="ann-title">${r.title}</h4>
+          <p class="ann-body">${r.body}</p>
+        </div>`;
+    }).join("");
+  }
+
+  window.loadMyRequests = loadMyRequests;
+
+},500);
+</script>
+</body>
+</html>

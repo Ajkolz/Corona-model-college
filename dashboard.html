@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>School Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<body class="dashboard-body">
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <h2>School Admin</h2>
+  </div>
+  <nav>
+  <a href="dashboard.html" class="active">📊 Dashboard</a>
+  <a href="reportcard.html">📋 Report Cards</a>
+  <a href="alumni.html">🎓 Alumni</a>
+  <a href="settings.html">⚙️ Settings</a>
+</nav>
+  <button onclick="logout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="main-content">
+
+  <div class="topbar">
+    <h1>Dashboard</h1>
+    <p class="topbar-sub">Manage students, attendance and results</p>
+  </div>
+
+  <!-- ADD STUDENT -->
+  <div class="card">
+    <h3>➕ Add New Student</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input id="firstName" placeholder="e.g. Chukwuemeka">
+      </div>
+      <div class="form-group">
+        <label>Middle Name</label>
+        <input id="middleName" placeholder="e.g. Obinna">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input id="lastName" placeholder="e.g. Nwosu">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Class</label>
+        <select id="class">
+          <optgroup label="Basic School">
+            <option value="Basic 1A">Basic 1A</option>
+            <option value="Basic 1B">Basic 1B</option>
+            <option value="Basic 2A">Basic 2A</option>
+            <option value="Basic 2B">Basic 2B</option>
+            <option value="Basic 3A">Basic 3A</option>
+            <option value="Basic 3B">Basic 3B</option>
+          </optgroup>
+          <optgroup label="Senior Secondary">
+            <option value="SS 1 Art">SS 1 Art</option>
+            <option value="SS 1 Commercial">SS 1 Commercial</option>
+            <option value="SS 1 Science">SS 1 Science</option>
+            <option value="SS 2 Art">SS 2 Art</option>
+            <option value="SS 2 Commercial">SS 2 Commercial</option>
+            <option value="SS 2 Science">SS 2 Science</option>
+            <option value="SS 3 Art">SS 3 Art</option>
+            <option value="SS 3 Commercial">SS 3 Commercial</option>
+            <option value="SS 3 Science">SS 3 Science</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Passport Photo (optional)</label>
+        <input type="file" id="passportPhoto" accept="image/*">
+        <small style="color:#94a3b8;">JPG or PNG, max 2MB</small>
+      </div>
+    </div>
+
+    <div id="photoPreview" style="display:none; margin-bottom:15px;">
+      <img id="previewImg" style="width:90px;height:110px;object-fit:cover;border-radius:8px;border:3px solid #d4a24c;">
+    </div>
+
+    <button onclick="addStudent()" class="btn-primary">Add Student</button>
+  </div>
+
+  <!-- STUDENT BROWSER -->
+  <div class="card">
+    <div class="card-header-row">
+      <h3>👨‍🎓 All Students</h3>
+      <input id="searchInput" placeholder="🔍 Search name..." oninput="searchStudents()" class="search-input">
+    </div>
+
+    <!-- CLASS TREE -->
+    <div id="classTree"></div>
+
+    <!-- STUDENT PANEL (shown when branch clicked) -->
+    <div id="studentPanel" style="display:none;">
+      <div class="student-panel-header">
+        <button onclick="closePanel()" class="back-btn">← Back to Classes</button>
+        <h4 id="panelTitle"></h4>
+        <span id="panelCount" class="branch-count"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Full Name</th>
+            <th>Class</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentPanelTable"></tbody>
+      </table>
+    </div>
+
+    <!-- SEARCH RESULTS -->
+    <div id="searchResults" style="display:none;">
+      <div class="student-panel-header">
+        <h4>Search Results</h4>
+        <span id="searchCount" class="branch-count"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Full Name</th>
+            <th>Class</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="searchTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
+
+<script type="module">
+
+import { collection, addDoc, getDocs, deleteDoc, doc, setDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const CLASS_GROUPS = [
+  { group: "Basic 1", branches: ["Basic 1A", "Basic 1B"] },
+  { group: "Basic 2", branches: ["Basic 2A", "Basic 2B"] },
+  { group: "Basic 3", branches: ["Basic 3A", "Basic 3B"] },
+  { group: "SS 1",    branches: ["SS 1 Art", "SS 1 Commercial", "SS 1 Science"] },
+  { group: "SS 2",    branches: ["SS 2 Art", "SS 2 Commercial", "SS 2 Science"] },
+  { group: "SS 3",    branches: ["SS 3 Art", "SS 3 Commercial", "SS 3 Science"] }
+];
+
+let allStudents = [];
+
+// Photo preview
+document.getElementById("passportPhoto").addEventListener("change", function(){
+  const file = this.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById("previewImg").src = e.target.result;
+      document.getElementById("photoPreview").style.display = "block";
+    }
+    reader.readAsDataURL(file);
+  }
+});
+
+function toBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+
+// ── BUILD CLASS TREE ─────────────────────────────────────
+function buildTree(){
+  const tree = document.getElementById("classTree");
+  tree.innerHTML = "";
+
+  CLASS_GROUPS.forEach(group => {
+
+    const groupStudentCount = allStudents.filter(s =>
+      group.branches.includes(s.class)
+    ).length;
+
+    const groupEl = document.createElement("div");
+    groupEl.className = "tree-group";
+
+    // Group row (Basic 1, SS 1, etc.)
+    groupEl.innerHTML = `
+      <div class="tree-group-row" onclick="toggleTreeGroup('tg-${group.group.replace(/\s/g,"-")}', this)">
+        <span class="tree-arrow">▶</span>
+        <span class="tree-group-name">${group.group}</span>
+        <span class="tree-total">${groupStudentCount} student${groupStudentCount !== 1 ? "s" : ""}</span>
+      </div>
+      <div class="tree-branches" id="tg-${group.group.replace(/\s/g,"-")}" style="display:none;">
+        ${group.branches.map(branch => {
+          const count = allStudents.filter(s => s.class === branch).length;
+          return `
+            <div class="tree-branch-row" onclick="openBranch('${branch}')">
+              <span class="tree-branch-dot">◆</span>
+              <span class="tree-branch-name">${branch}</span>
+              <span class="branch-count">${count}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    tree.appendChild(groupEl);
+  });
+}
+
+
+// ── TOGGLE GROUP OPEN/CLOSE ───────────────────────────────
+window.toggleTreeGroup = function(id, row){
+  const branches = document.getElementById(id);
+  const arrow    = row.querySelector(".tree-arrow");
+  const isOpen   = branches.style.display !== "none";
+  branches.style.display = isOpen ? "none" : "block";
+  arrow.textContent       = isOpen ? "▶" : "▼";
+  row.classList.toggle("open", !isOpen);
+}
+
+
+// ── OPEN BRANCH → SHOW STUDENTS ──────────────────────────
+window.openBranch = function(branch){
+  const students = allStudents.filter(s => s.class === branch);
+
+  document.getElementById("classTree").style.display    = "none";
+  document.getElementById("studentPanel").style.display = "block";
+  document.getElementById("searchResults").style.display = "none";
+
+  document.getElementById("panelTitle").textContent = "🏫 " + branch;
+  document.getElementById("panelCount").textContent =
+    students.length + " student" + (students.length !== 1 ? "s" : "");
+
+  renderStudentTable("studentPanelTable", students);
+}
+
+
+// ── CLOSE PANEL → BACK TO TREE ───────────────────────────
+window.closePanel = function(){
+  document.getElementById("studentPanel").style.display = "none";
+  document.getElementById("classTree").style.display    = "block";
+  document.getElementById("searchInput").value          = "";
+  document.getElementById("searchResults").style.display = "none";
+}
+
+
+// ── RENDER STUDENT TABLE ─────────────────────────────────
+function renderStudentTable(tbodyId, students){
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = "";
+
+  if(students.length === 0){
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align:center;color:#64748b;padding:24px;">
+          No students in this class yet.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  students.forEach(student => {
+    const photoHTML = student.photo
+      ? `<img src="${student.photo}"
+             style="width:40px;height:50px;object-fit:cover;
+                    border-radius:6px;border:2px solid #d4a24c;">`
+      : `<div style="width:40px;height:50px;background:#0f172a;
+                     border-radius:6px;display:flex;
+                     align-items:center;justify-content:center;
+                     font-size:18px;">👤</div>`;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${photoHTML}</td>
+        <td>
+          <a href="student.html?id=${student.id}">
+            ${student.fullName || student.name || "—"}
+          </a>
+        </td>
+        <td><span class="class-badge">${student.class}</span></td>
+        <td>
+          <a href="student.html?id=${student.id}" class="btn-view">View Profile</a>
+          <button onclick="deleteStudent('${student.id}')" class="btn-delete">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+
+// ── SEARCH ────────────────────────────────────────────────
+window.searchStudents = function(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if(q.length === 0){
+    document.getElementById("searchResults").style.display = "none";
+    document.getElementById("classTree").style.display     = "block";
+    document.getElementById("studentPanel").style.display  = "none";
+    return;
+  }
+
+  const filtered = allStudents.filter(s =>
+    (s.fullName || s.name || "").toLowerCase().includes(q) ||
+    (s.class || "").toLowerCase().includes(q)
+  );
+
+  document.getElementById("classTree").style.display     = "none";
+  document.getElementById("studentPanel").style.display  = "none";
+  document.getElementById("searchResults").style.display = "block";
+  document.getElementById("searchCount").textContent     =
+    filtered.length + " result" + (filtered.length !== 1 ? "s" : "");
+
+  renderStudentTable("searchTable", filtered);
+}
+
+
+// ── LOAD STUDENTS ─────────────────────────────────────────
+async function loadStudents(){
+  const db       = window.db;
+  const snapshot = await getDocs(collection(db, "students"));
+  allStudents    = [];
+  snapshot.forEach(d => allStudents.push({ id: d.id, ...d.data() }));
+  buildTree();
+}
+
+
+setTimeout(() => {
+
+  const db   = window.db;
+  const auth = window.auth;
+
+  onAuthStateChanged(auth, (user) => {
+    if(!user) window.location.href = "login.html";
+  });
+
+
+  // ADD STUDENT
+  window.addStudent = async function(){
+    const firstName    = document.getElementById("firstName").value.trim();
+    const middleName   = document.getElementById("middleName").value.trim();
+    const lastName     = document.getElementById("lastName").value.trim();
+    const studentClass = document.getElementById("class").value;
+    const photoFile    = document.getElementById("passportPhoto").files[0];
+
+    if(!firstName || !lastName){
+      alert("First name and last name are required.");
+      return;
+    }
+
+    let photoBase64 = "";
+    if(photoFile){
+      if(photoFile.size > 2 * 1024 * 1024){ alert("Photo must be under 2MB."); return; }
+      photoBase64 = await toBase64(photoFile);
+    }
+
+    const fullName = [firstName, middleName, lastName].filter(Boolean).join(" ");
+
+    await addDoc(collection(db, "students"), {
+      firstName, middleName, lastName, fullName,
+      class: studentClass,
+      photo: photoBase64
+    });
+
+    alert("Student added!");
+    document.getElementById("firstName").value  = "";
+    document.getElementById("middleName").value = "";
+    document.getElementById("lastName").value   = "";
+    document.getElementById("passportPhoto").value = "";
+    document.getElementById("photoPreview").style.display = "none";
+
+    loadStudents();
+  }
+
+
+  // DELETE
+  window.deleteStudent = async function(id){
+    if(!confirm("Delete this student? This cannot be undone.")) return;
+    await deleteDoc(doc(db, "students", id));
+    loadStudents();
+    closePanel();
+  }
+
+
+  // LOGOUT
+  window.logout = function(){
+    signOut(window.auth).then(() => window.location.href = "login.html");
+  }
+
+
+  loadStudents();
+
+}, 1000);
+
+</script>
+
+</body>
+</html>

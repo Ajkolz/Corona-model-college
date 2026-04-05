@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Settings – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-icon">🎓</span><div><h2>Corona Model</h2><span style="font-size:10px;color:#475569;">Admin Portal</span></div></div>
+  <nav>
+    <a href="admin-dashboard.html">📊 Dashboard</a>
+    <a href="announcements.html">📢 Announcements</a>
+    <a href="reportcard.html">📋 Report Cards</a>
+    <a href="fees.html">💰 School Fees</a>
+    <a href="alumni.html">🎓 Alumni</a>
+    <a href="manage-accounts.html">🔐 Manage Accounts</a>
+    <a href="settings.html" class="active">⚙️ Settings</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">Settings</span>
+</div>
+<div class="main-content">
+  <div class="topbar"><h1>⚙️ School Settings</h1><p class="topbar-sub">Configure the active term, session and SMS integration.</p></div>
+
+  <div class="card" style="max-width:560px;">
+    <h3>📅 Active Term & Session</h3>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Current Term</label>
+      <select id="activeTerm">
+        <option value="First Term">First Term</option>
+        <option value="Second Term">Second Term</option>
+        <option value="Third Term">Third Term</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Current Session</label>
+      <input id="activeSession" placeholder="e.g. 2024/2025">
+    </div>
+    <div class="section-divider">📱 SMS Integration (Termii)</div>
+    <div class="form-group" style="margin-bottom:6px;">
+      <label>Termii API Key</label>
+      <input id="termiiKey" placeholder="Paste your Termii API key here" style="font-family:monospace;font-size:12px;">
+    </div>
+    <p style="font-size:12px;color:#475569;margin-bottom:16px;">
+      Get your key at <a href="https://termii.com" target="_blank" style="color:#d4a24c;">termii.com</a>
+      → Dashboard → API Keys. Required to send SMS announcements.
+    </p>
+    <button onclick="saveSettings()" class="btn-primary">💾 Save Settings</button>
+    <div id="settingsSaved" style="display:none;margin-top:14px;color:#22c55e;font-size:14px;">✅ Settings saved successfully.</div>
+  </div>
+
+  <div class="card" style="max-width:560px;">
+    <h3>ℹ️ Current Active Settings</h3>
+    <p style="color:#94a3b8;font-size:14px;" id="currentSettings">Loading...</p>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("admin");
+if(!session) throw new Error("Not authorised");
+
+window.doLogout=function(){signOut(window.auth).then(()=>{window.clearSession();window.location.href="login.html";});};
+window.toggleSidebar=function(){document.getElementById("sidebar").classList.toggle("open");};
+
+setTimeout(async()=>{
+  const db=window.db;
+  async function loadSettings(){
+    const snap=await getDoc(doc(db,"settings","school"));
+    if(snap.exists()){
+      const d=snap.data();
+      document.getElementById("activeTerm").value=d.term||"First Term";
+      document.getElementById("activeSession").value=d.session||"";
+      if(d.termiiKey) document.getElementById("termiiKey").value=d.termiiKey;
+      document.getElementById("currentSettings").innerHTML=
+        `<strong>Term:</strong> ${d.term||"—"} &nbsp;|&nbsp; <strong>Session:</strong> ${d.session||"—"} &nbsp;|&nbsp; <strong>Termii Key:</strong> ${d.termiiKey?"✅ Set":"❌ Not set"}`;
+    } else {
+      document.getElementById("currentSettings").textContent="No settings saved yet.";
+    }
+  }
+  await loadSettings();
+
+  window.saveSettings=async function(){
+    const term=document.getElementById("activeTerm").value;
+    const session=document.getElementById("activeSession").value.trim();
+    const termiiKey=document.getElementById("termiiKey").value.trim();
+    if(!session){alert("Please enter the session e.g. 2024/2025");return;}
+    await setDoc(doc(db,"settings","school"),{term,session,termiiKey});
+    document.getElementById("settingsSaved").style.display="block";
+    document.getElementById("currentSettings").innerHTML=
+      `<strong>Term:</strong> ${term} &nbsp;|&nbsp; <strong>Session:</strong> ${session} &nbsp;|&nbsp; <strong>Termii Key:</strong> ${termiiKey?"✅ Set":"❌ Not set"}`;
+    setTimeout(()=>document.getElementById("settingsSaved").style.display="none",3000);
+  };
+},500);
+</script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Profile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<body class="dashboard-body">
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <h2>School Admin</h2>
+  </div>
+  <nav>
+  <a href="dashboard.html" class="active">📊 Dashboard</a>
+  <a href="reportcard.html">📋 Report Cards</a>
+  <a href="alumni.html">🎓 Alumni</a>
+  <a href="settings.html">⚙️ Settings</a>
+</nav>
+  <button onclick="logout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="main-content">
+
+  <div class="topbar">
+    <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+    <h1>Student Profile</h1>
+  </div>
+
+  <!-- PROFILE CARD -->
+  <div class="card">
+    <div id="studentDetails"><p>Loading...</p></div>
+
+    <div id="photoUploadSection" style="margin-top:20px;">
+      <h3>📷 Passport Photo</h3>
+      <div id="currentPhotoArea"></div>
+      <div class="form-row" style="margin-top:12px;">
+        <div class="form-group">
+          <label>Upload / Change Photo</label>
+          <input type="file" id="profilePhotoInput" accept="image/*">
+          <small style="color:#64748b;">JPG or PNG, max 2MB</small>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <button onclick="saveProfilePhoto()" class="btn-primary" style="margin-top:auto;">Save Photo</button>
+        </div>
+      </div>
+      <div id="profilePhotoPreview" style="display:none; margin-top:10px;">
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:6px;">Preview:</p>
+        <img id="profilePreviewImg" style="width:90px;height:110px;object-fit:cover;border-radius:10px;border:3px solid #d4a24c;">
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTRA DETAILS -->
+  <div class="card">
+    <h3>🩺 Medical & Personal Details</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Height (cm)</label>
+        <input id="height" placeholder="e.g. 145">
+      </div>
+      <div class="form-group">
+        <label>Blood Group</label>
+        <select id="bloodGroup">
+          <option value="">— Select —</option>
+          <option>A+</option><option>A-</option>
+          <option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option>
+          <option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Known Medical Condition</label>
+        <input id="medicalCondition" placeholder="e.g. Asthma, None">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Parent / Guardian Phone 1</label>
+        <input id="parentPhone1" placeholder="e.g. 08012345678">
+      </div>
+      <div class="form-group">
+        <label>Parent / Guardian Phone 2</label>
+        <input id="parentPhone2" placeholder="e.g. 08087654321">
+      </div>
+    </div>
+    <button onclick="saveExtraDetails()" class="btn-primary">Save Details</button>
+  </div>
+
+  <!-- ATTENDANCE -->
+  <div class="card">
+    <h3>📅 Attendance</h3>
+
+    <!-- Summary Stats -->
+    <div class="attendance-stats" id="attendanceStats">
+      <div class="stat-box">
+        <span id="statPresent">0</span>
+        <label>Days Present</label>
+      </div>
+      <div class="stat-box absent-stat">
+        <span id="statAbsent">0</span>
+        <label>Days Absent</label>
+      </div>
+      <div class="stat-box total-stat">
+        <span id="statTotal">0</span>
+        <label>Total School Days</label>
+      </div>
+      <div class="stat-box rate-stat">
+        <span id="statRate">0%</span>
+        <label>Attendance Rate</label>
+      </div>
+    </div>
+
+    <!-- Mark Attendance -->
+    <div class="form-row" style="margin-top:20px; align-items:flex-end;">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="attendanceDate">
+      </div>
+      <div class="form-group">
+        <label>Term</label>
+        <select id="attendanceTerm">
+          <option value="First Term">First Term</option>
+          <option value="Second Term">Second Term</option>
+          <option value="Third Term">Third Term</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Session</label>
+        <input id="attendanceSession" placeholder="e.g. 2024/2025">
+      </div>
+      <div class="form-group" style="flex-direction:row; gap:8px; align-items:flex-end;">
+        <button onclick="markAttendance('Present')" class="btn-attend present" style="flex:1;">✅ Present</button>
+        <button onclick="markAttendance('Absent')" class="btn-attend absent" style="flex:1;">❌ Absent</button>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="form-row" style="margin-top:16px; align-items:flex-end;">
+      <div class="form-group">
+        <label>Filter by Term</label>
+        <select id="filterTerm" onchange="loadAttendance()">
+          <option value="all">All Terms</option>
+          <option value="First Term">First Term</option>
+          <option value="Second Term">Second Term</option>
+          <option value="Third Term">Third Term</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Filter by Session</label>
+        <input id="filterSession" placeholder="e.g. 2024/2025" oninput="loadAttendance()">
+      </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <table style="margin-top:16px;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Term</th>
+          <th>Session</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceTable"></tbody>
+    </table>
+  </div>
+
+  <!-- ADD RESULT -->
+  <div class="card">
+    <h3>📝 Add Result</h3>
+    <div class="form-row">
+      <div class="form-group" style="position:relative; flex:2;">
+        <label>Subject</label>
+        <input id="subjectInput" placeholder="Type to search subject..." autocomplete="off" oninput="filterSubjects()">
+        <div id="subjectDropdown" class="subject-dropdown"></div>
+      </div>
+      <div class="form-group">
+        <label>Score (0–100)</label>
+        <input id="score" type="number" placeholder="e.g. 78" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>Term</label>
+        <select id="term">
+          <option value="First Term">First Term</option>
+          <option value="Second Term">Second Term</option>
+          <option value="Third Term">Third Term</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="addResult()" class="btn-primary">Save Result</button>
+  </div>
+
+  <!-- RESULTS TABLE -->
+  <div class="card">
+    <h3>📊 Results</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Score</th>
+          <th>Grade</th>
+          <th>Term</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="resultsTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
+
+<script type="module">
+
+import {
+  doc, getDoc, collection,
+  getDocs, addDoc, deleteDoc, updateDoc, setDoc
+}
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const urlParams = new URLSearchParams(window.location.search);
+const studentId = urlParams.get("id");
+
+// Set today's date as default
+document.getElementById("attendanceDate").valueAsDate = new Date();
+
+// Subjects list
+const ALL_SUBJECTS = [
+  "Mathematics","English Language","Basic Science","Basic Technology",
+  "Social Studies","Civic Education","Agricultural Science","Home Economics",
+  "Computer Studies","French","Yoruba","Igbo","Hausa",
+  "Christian Religious Studies","Islamic Religious Studies",
+  "Physical & Health Education","Creative Arts","Music",
+  "Business Studies","Economics","Commerce","Accounting",
+  "Government","History","Geography","Biology","Chemistry",
+  "Physics","Further Mathematics","Technical Drawing",
+  "Food & Nutrition","Clothing & Textiles","Literature in English",
+  "Financial Accounting","Marketing","Office Practice"
+];
+
+let selectedSubject = "";
+
+window.filterSubjects = function(){
+  const input = document.getElementById("subjectInput").value.toLowerCase();
+  const dropdown = document.getElementById("subjectDropdown");
+  if(input.length < 1){ dropdown.style.display="none"; selectedSubject=""; return; }
+  const matches = ALL_SUBJECTS.filter(s => s.toLowerCase().includes(input));
+  if(matches.length === 0){ dropdown.style.display="none"; return; }
+  dropdown.innerHTML = matches.map(s => `<div class="subject-option" onclick="selectSubject('${s}')">${s}</div>`).join("");
+  dropdown.style.display = "block";
+}
+
+window.selectSubject = function(subject){
+  selectedSubject = subject;
+  document.getElementById("subjectInput").value = subject;
+  document.getElementById("subjectDropdown").style.display = "none";
+}
+
+document.addEventListener("click", function(e){
+  if(!e.target.closest(".form-group")) document.getElementById("subjectDropdown").style.display = "none";
+});
+
+function getGrade(score){
+  if(score >= 70) return "A";
+  if(score >= 60) return "B";
+  if(score >= 50) return "C";
+  if(score >= 40) return "D";
+  return "F";
+}
+
+function toBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+
+setTimeout(async () => {
+
+  const db = window.db;
+  const auth = window.auth;
+
+  onAuthStateChanged(auth, (user) => {
+    if(!user) window.location.href = "login.html";
+  });
+
+
+  // ── LOAD STUDENT ──────────────────────────────────────
+  const studentSnap = await getDoc(doc(db, "students", studentId));
+
+  if(studentSnap.exists()){
+    const d = studentSnap.data();
+
+    const photoHTML = d.photo
+      ? `<img src="${d.photo}" class="profile-photo">`
+      : `<div class="profile-photo-placeholder">👤</div>`;
+
+    document.getElementById("studentDetails").innerHTML = `
+      <div class="profile-info">
+        ${photoHTML}
+        <div>
+          <h2>${d.fullName || d.name}</h2>
+          <p><strong>Class:</strong> <span class="class-badge">${d.class}</span></p>
+          ${d.firstName ? `<p><strong>First:</strong> ${d.firstName} &nbsp; <strong>Middle:</strong> ${d.middleName || "—"} &nbsp; <strong>Last:</strong> ${d.lastName}</p>` : ""}
+          ${d.height ? `<p><strong>Height:</strong> ${d.height} cm</p>` : ""}
+          ${d.bloodGroup ? `<p><strong>Blood Group:</strong> ${d.bloodGroup}</p>` : ""}
+          ${d.medicalCondition ? `<p><strong>Medical:</strong> ${d.medicalCondition}</p>` : ""}
+          ${d.parentPhone1 ? `<p><strong>Parent 1:</strong> ${d.parentPhone1}</p>` : ""}
+          ${d.parentPhone2 ? `<p><strong>Parent 2:</strong> ${d.parentPhone2}</p>` : ""}
+        </div>
+      </div>
+    `;
+
+    // Pre-fill extra details form
+    if(d.height)           document.getElementById("height").value = d.height;
+    if(d.bloodGroup)       document.getElementById("bloodGroup").value = d.bloodGroup;
+    if(d.medicalCondition) document.getElementById("medicalCondition").value = d.medicalCondition;
+    if(d.parentPhone1)     document.getElementById("parentPhone1").value = d.parentPhone1;
+    if(d.parentPhone2)     document.getElementById("parentPhone2").value = d.parentPhone2;
+
+    // Photo status
+    const currentPhotoArea = document.getElementById("currentPhotoArea");
+    currentPhotoArea.innerHTML = d.photo
+      ? `<p style="color:#22c55e;font-size:13px;">✅ Photo on file. Upload below to replace.</p>`
+      : `<p style="color:#f59e0b;font-size:13px;">⚠️ No photo yet. Add one below.</p>`;
+  }
+
+
+  // ── SAVE EXTRA DETAILS ────────────────────────────────
+  window.saveExtraDetails = async function(){
+    await updateDoc(doc(db, "students", studentId), {
+      height:           document.getElementById("height").value.trim(),
+      bloodGroup:       document.getElementById("bloodGroup").value,
+      medicalCondition: document.getElementById("medicalCondition").value.trim(),
+      parentPhone1:     document.getElementById("parentPhone1").value.trim(),
+      parentPhone2:     document.getElementById("parentPhone2").value.trim()
+    });
+    alert("Details saved!");
+    window.location.reload();
+  }
+
+
+  // ── PHOTO UPLOAD ──────────────────────────────────────
+  document.getElementById("profilePhotoInput").addEventListener("change", function(){
+    const file = this.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        document.getElementById("profilePreviewImg").src = e.target.result;
+        document.getElementById("profilePhotoPreview").style.display = "block";
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  window.saveProfilePhoto = async function(){
+    const file = document.getElementById("profilePhotoInput").files[0];
+    if(!file){ alert("Please select a photo first."); return; }
+    if(file.size > 2 * 1024 * 1024){ alert("Photo must be under 2MB."); return; }
+    const base64 = await toBase64(file);
+    await updateDoc(doc(db, "students", studentId), { photo: base64 });
+    alert("Photo saved!");
+    window.location.reload();
+  }
+
+
+  // ── ATTENDANCE ────────────────────────────────────────
+  window.markAttendance = async function(status){
+    const date    = document.getElementById("attendanceDate").value;
+    const term    = document.getElementById("attendanceTerm").value;
+    const session = document.getElementById("attendanceSession").value.trim();
+
+    if(!date){ alert("Please select a date."); return; }
+    if(!session){ alert("Please enter the session e.g. 2024/2025."); return; }
+
+    await setDoc(doc(db, "attendance", studentId + "_" + date), {
+      studentId,
+      status,
+      date,
+      term,
+      session
+    });
+
+    alert(`Marked ${status} for ${date}`);
+    loadAttendance();
+  }
+
+
+  window.loadAttendance = async function(){
+    const filterTerm    = document.getElementById("filterTerm").value;
+    const filterSession = document.getElementById("filterSession").value.trim();
+
+    const snapshot = await getDocs(collection(db, "attendance"));
+    const table    = document.getElementById("attendanceTable");
+
+    let records = [];
+
+    snapshot.forEach(d => {
+      const data = d.data();
+      if(data.studentId !== studentId) return;
+      if(filterTerm !== "all" && data.term !== filterTerm) return;
+      if(filterSession && data.session !== filterSession) return;
+      records.push({ id: d.id, ...data });
+    });
+
+    // Sort by date descending
+    records.sort((a, b) => b.date.localeCompare(a.date));
+
+    // Stats
+    const present = records.filter(r => r.status === "Present").length;
+    const absent  = records.filter(r => r.status === "Absent").length;
+    const total   = records.length;
+    const rate    = total > 0 ? Math.round((present / total) * 100) : 0;
+
+    document.getElementById("statPresent").textContent = present;
+    document.getElementById("statAbsent").textContent  = absent;
+    document.getElementById("statTotal").textContent   = total;
+    document.getElementById("statRate").textContent    = rate + "%";
+
+    // Colour the rate
+    const rateBox = document.getElementById("statRate");
+    rateBox.style.color = rate >= 75 ? "#22c55e" : rate >= 50 ? "#f59e0b" : "#ef4444";
+
+    // Table
+    table.innerHTML = "";
+
+    if(records.length === 0){
+      table.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#64748b;">No attendance records found.</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const color = r.status === "Present" ? "#22c55e" : "#ef4444";
+      table.innerHTML += `
+        <tr>
+          <td>${r.date}</td>
+          <td style="color:${color}; font-weight:600;">${r.status}</td>
+          <td>${r.term}</td>
+          <td>${r.session || "—"}</td>
+          <td><button onclick="deleteAttendance('${r.id}')" class="btn-delete">Delete</button></td>
+        </tr>
+      `;
+    });
+  }
+
+
+  window.deleteAttendance = async function(id){
+    if(!confirm("Delete this attendance record?")) return;
+    await deleteDoc(doc(db, "attendance", id));
+    loadAttendance();
+  }
+
+
+  // ── RESULTS ───────────────────────────────────────────
+  window.addResult = async function(){
+    const subject = selectedSubject || document.getElementById("subjectInput").value.trim();
+    const score   = parseInt(document.getElementById("score").value);
+    const term    = document.getElementById("term").value;
+
+    if(!subject){ alert("Please select or type a subject."); return; }
+    if(isNaN(score) || score < 0 || score > 100){ alert("Enter a valid score between 0 and 100."); return; }
+
+    await addDoc(collection(db, "results"), {
+      studentId, subject, score,
+      grade: getGrade(score),
+      term,
+      createdAt: new Date()
+    });
+
+    alert("Result saved!");
+    document.getElementById("subjectInput").value = "";
+    document.getElementById("score").value = "";
+    selectedSubject = "";
+    loadResults();
+  }
+
+  async function loadResults(){
+    const snapshot = await getDocs(collection(db, "results"));
+    const table    = document.getElementById("resultsTable");
+    table.innerHTML = "";
+    let found = false;
+
+    snapshot.forEach(d => {
+      const data = d.data();
+      if(data.studentId !== studentId) return;
+      found = true;
+
+      const gradeColor =
+        data.grade === "A" ? "#22c55e" :
+        data.grade === "B" ? "#3b82f6" :
+        data.grade === "C" ? "#f59e0b" :
+        data.grade === "D" ? "#f97316" : "#ef4444";
+
+      table.innerHTML += `
+        <tr>
+          <td>${data.subject}</td>
+          <td>${data.score}</td>
+          <td style="color:${gradeColor};font-weight:700;">${data.grade}</td>
+          <td>${data.term}</td>
+          <td><button onclick="deleteResult('${d.id}')" class="btn-delete">Delete</button></td>
+        </tr>
+      `;
+    });
+
+    if(!found) table.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#64748b;">No results yet.</td></tr>`;
+  }
+
+  window.deleteResult = async function(id){
+    if(!confirm("Delete this result?")) return;
+    await deleteDoc(doc(db, "results", id));
+    loadResults();
+  }
+
+  window.logout = function(){
+    signOut(window.auth).then(() => window.location.href = "login.html");
+  }
+
+  loadAttendance();
+  loadResults();
+
+}, 1000);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,190 @@
+bash
+
+python3 << 'PYEOF'
+import os
+base = "/mnt/user-data/outputs/corona-model-college"
+
+manage = open("/dev/stdin").read() if False else r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Manage Accounts – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-icon">🎓</span><div><h2>Corona Model</h2><span style="font-size:10px;color:#475569;">Admin Portal</span></div></div>
+  <nav>
+    <a href="admin-dashboard.html">📊 Dashboard</a>
+    <a href="announcements.html">📢 Announcements</a>
+    <a href="reportcard.html">📋 Report Cards</a>
+    <a href="fees.html">💰 School Fees</a>
+    <a href="alumni.html">🎓 Alumni</a>
+    <a href="manage-accounts.html" class="active">🔐 Manage Accounts</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">Manage Accounts</span>
+</div>
+<div class="main-content">
+  <div class="topbar"><h1>🔐 Manage Accounts</h1><p class="topbar-sub">View and manage all student logins, class accounts and credentials.</p></div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h3>🏫 Class Accounts (Teacher Logins)</h3>
+      <button onclick="showAddClassModal()" class="btn-primary" style="padding:8px 16px;font-size:13px;">+ Add Class Account</button>
+    </div>
+    <table><thead><tr><th>Class Name</th><th>Class ID</th><th>Password</th><th>Action</th></tr></thead>
+    <tbody id="classAccountsTable"></tbody></table>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h3>👨‍🎓 Student Login Credentials</h3>
+      <input class="search-input" id="studentSearch" placeholder="🔍 Search name or admission no..." oninput="filterStudents()">
+    </div>
+    <table><thead><tr><th>Full Name</th><th>Class</th><th>Admission No.</th><th>Password</th><th>Action</th></tr></thead>
+    <tbody id="studentAccountsTable"></tbody></table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="classModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeClassModal()">✕</button>
+    <h3>🏫 Add Class Account</h3>
+    <p>Create a teacher login for a class.</p>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Class Name</label>
+      <select id="newClassName">
+        <optgroup label="Basic School">
+          <option>Basic 1A</option><option>Basic 1B</option><option>Basic 2A</option>
+          <option>Basic 2B</option><option>Basic 3A</option><option>Basic 3B</option>
+        </optgroup>
+        <optgroup label="Senior Secondary">
+          <option>SS 1 Art</option><option>SS 1 Commercial</option><option>SS 1 Science</option>
+          <option>SS 2 Art</option><option>SS 2 Commercial</option><option>SS 2 Science</option>
+          <option>SS 3 Art</option><option>SS 3 Commercial</option><option>SS 3 Science</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;"><label>Class ID (teacher uses this to login)</label><input id="newClassId" placeholder="e.g. CLASS-BASIC1A"></div>
+    <div class="form-group" style="margin-bottom:20px;"><label>Password</label><input id="newClassPassword" placeholder="Set a password"></div>
+    <button onclick="saveClassAccount()" class="btn-primary" style="width:100%;">Save Class Account</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
+    <h3 id="editModalTitle">Edit Password</h3>
+    <div class="form-group" style="margin:16px 0 20px;"><label>New Password</label><input id="editPassword" type="text" placeholder="Enter new password"></div>
+    <button onclick="saveEditPassword()" class="btn-primary" style="width:100%;">Save New Password</button>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("admin");
+if(!session) throw new Error("Not authorised");
+
+let allStudents=[], editTarget=null;
+
+window.doLogout=function(){signOut(window.auth).then(()=>{window.clearSession();window.location.href="login.html";});};
+window.toggleSidebar=function(){document.getElementById("sidebar").classList.toggle("open");};
+window.showAddClassModal=()=>document.getElementById("classModal").classList.add("open");
+window.closeClassModal=()=>document.getElementById("classModal").classList.remove("open");
+window.closeEditModal=()=>document.getElementById("editModal").classList.remove("open");
+
+setTimeout(async()=>{
+  const db=window.db;
+  await loadClassAccounts();
+  await loadStudentAccounts();
+
+  window.saveClassAccount=async function(){
+    const className=document.getElementById("newClassName").value;
+    const classId=document.getElementById("newClassId").value.trim().toUpperCase();
+    const password=document.getElementById("newClassPassword").value.trim();
+    if(!classId||!password){alert("Class ID and password required.");return;}
+    await addDoc(collection(db,"classAccounts"),{className,classId,password});
+    alert("Class account created!");closeClassModal();await loadClassAccounts();
+  };
+
+  async function loadClassAccounts(){
+    const snap=await getDocs(collection(db,"classAccounts"));
+    const tb=document.getElementById("classAccountsTable");tb.innerHTML="";
+    if(snap.empty){tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:#64748b;padding:24px;">No class accounts yet.</td></tr>`;return;}
+    snap.forEach(d=>{
+      const data=d.data();
+      tb.innerHTML+=`<tr><td style="font-weight:600;">${data.className}</td><td style="font-family:monospace;color:#d4a24c;">${data.classId}</td><td style="font-family:monospace;color:#94a3b8;">${data.password}</td><td><button onclick="editClassPassword('${d.id}','${data.className}')" class="btn-view">Edit</button><button onclick="deleteClassAccount('${d.id}')" class="btn-delete">Delete</button></td></tr>`;
+    });
+  }
+
+  async function loadStudentAccounts(){
+    const snap=await getDocs(collection(db,"students"));
+    allStudents=[];snap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+    renderStudentAccounts(allStudents);
+  }
+
+  function renderStudentAccounts(list){
+    const tb=document.getElementById("studentAccountsTable");tb.innerHTML="";
+    if(list.length===0){tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#64748b;padding:24px;">No students found.</td></tr>`;return;}
+    list.forEach(s=>{
+      tb.innerHTML+=`<tr><td style="font-weight:600;"><a href="student.html?id=${s.id}" style="color:#93c5fd;">${s.fullName||s.name||"—"}</a></td><td><span class="class-badge">${s.class||"—"}</span></td><td style="font-family:monospace;color:#d4a24c;font-size:13px;">${s.admissionNumber||"—"}</td><td style="font-family:monospace;color:#94a3b8;font-size:13px;">${s.loginPassword||"—"}</td><td><button onclick="editStudentPassword('${s.id}','${(s.fullName||s.name||"").replace(/'/g,"")}')" class="btn-view">Edit Password</button></td></tr>`;
+    });
+  }
+
+  window.filterStudents=function(){
+    const q=document.getElementById("studentSearch").value.toLowerCase();
+    renderStudentAccounts(allStudents.filter(s=>(s.fullName||s.name||"").toLowerCase().includes(q)||(s.admissionNumber||"").toLowerCase().includes(q)));
+  };
+
+  window.editStudentPassword=function(id,name){
+    editTarget={type:"student",id};
+    document.getElementById("editModalTitle").textContent=`Edit Password — ${name}`;
+    document.getElementById("editPassword").value="";
+    document.getElementById("editModal").classList.add("open");
+  };
+
+  window.editClassPassword=function(id,name){
+    editTarget={type:"class",id};
+    document.getElementById("editModalTitle").textContent=`Edit Password — ${name}`;
+    document.getElementById("editPassword").value="";
+    document.getElementById("editModal").classList.add("open");
+  };
+
+  window.saveEditPassword=async function(){
+    const newPw=document.getElementById("editPassword").value.trim();
+    if(!newPw){alert("Please enter a new password.");return;}
+    if(editTarget.type==="student"){
+      await updateDoc(doc(db,"students",editTarget.id),{loginPassword:newPw});
+      await loadStudentAccounts();
+    } else {
+      await updateDoc(doc(db,"classAccounts",editTarget.id),{password:newPw});
+      await loadClassAccounts();
+    }
+    alert("Password updated!");closeEditModal();
+  };
+
+  window.deleteClassAccount=async function(id){
+    if(!confirm("Delete this class account?"))return;
+    await deleteDoc(doc(db,"classAccounts",id));
+    await loadClassAccounts();
+  };
+},500);
+</script>
+</body>
+</html>"""
+
+with open(f"{base}/manage-accounts.html", "w") as f:
+    f.write(manage)
+
+print("manage-accounts.html done")
+PYEOF

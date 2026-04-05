@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Teacher Dashboard – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <div>
+      <h2>Corona Model</h2>
+      <span style="font-size:10px;color:#475569;" id="teacherClassLabel">Teacher</span>
+    </div>
+  </div>
+  <nav>
+    <a href="teacher-dashboard.html" class="active">📊 My Class</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title" id="mobileClassLabel">My Class</span>
+  <button onclick="doLogout()"
+    style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">⏻</button>
+</div>
+
+<div class="main-content">
+
+  <div class="topbar">
+    <h1 id="classHeading">My Class</h1>
+    <p class="topbar-sub" id="termLabel">Loading...</p>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('students',this)">👨‍🎓 Students</button>
+    <button class="tab-btn" onclick="showTab('attendance',this)">📅 Attendance</button>
+    <button class="tab-btn" onclick="showTab('results',this)">📝 Results</button>
+    <button class="tab-btn" onclick="showTab('subjects',this)">📚 Subjects</button>
+  </div>
+
+  <!-- STUDENTS TAB -->
+  <div id="tab-students" class="tab-content">
+    <div class="card">
+      <h3>👨‍🎓 Students in My Class</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Photo</th><th>Full Name</th>
+            <th>Blood Group</th><th>Medical</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="myStudentsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE TAB -->
+  <div id="tab-attendance" class="tab-content" style="display:none;">
+    <div class="card">
+      <h3>📅 Mark Attendance</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="attDate">
+        </div>
+        <div class="form-group">
+          <label>Term</label>
+          <select id="attTerm">
+            <option>First Term</option>
+            <option>Second Term</option>
+            <option>Third Term</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Session</label>
+          <input id="attSession" placeholder="e.g. 2024/2025">
+        </div>
+      </div>
+      <div id="attendanceList" style="margin-top:16px;"></div>
+      <button onclick="saveAllAttendance()" class="btn-primary"
+        style="margin-top:16px;">💾 Save Attendance</button>
+    </div>
+
+    <!-- Attendance History -->
+    <div class="card">
+      <div class="card-header-row">
+        <h3>📋 Attendance History</h3>
+        <select id="attHistoryTerm" onchange="loadAttHistory()"
+          style="padding:8px;background:#0f172a;border:1px solid #334155;
+          border-radius:8px;color:#e2e8f0;font-size:13px;">
+          <option value="all">All Terms</option>
+          <option>First Term</option>
+          <option>Second Term</option>
+          <option>Third Term</option>
+        </select>
+      </div>
+      <div id="attHistoryContent"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS TAB -->
+  <div id="tab-results" class="tab-content" style="display:none;">
+
+    <!-- Enter result -->
+    <div class="card">
+      <h3>📝 Enter Result</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Select Student</label>
+          <select id="resultStudent"></select>
+        </div>
+        <div class="form-group" style="position:relative;">
+          <label>Subject</label>
+          <input id="resultSubject" placeholder="Type to search..."
+            autocomplete="off" oninput="filterSubjectsSuggestions()">
+          <div id="subjectSuggestions" class="subject-dropdown"></div>
+        </div>
+        <div class="form-group">
+          <label>Score (0–100)</label>
+          <input type="number" id="resultScore" min="0" max="100">
+        </div>
+        <div class="form-group">
+          <label>Term</label>
+          <select id="resultTerm">
+            <option>First Term</option>
+            <option>Second Term</option>
+            <option>Third Term</option>
+          </select>
+        </div>
+      </div>
+      <button onclick="saveResult()" class="btn-primary">Save Result</button>
+    </div>
+
+    <!-- Results by student (collapsible) -->
+    <div class="card">
+      <div class="card-header-row">
+        <h3>📊 Results by Student</h3>
+        <select id="resultFilterTerm" onchange="loadResults()"
+          style="padding:8px;background:#0f172a;border:1px solid #334155;
+          border-radius:8px;color:#e2e8f0;font-size:13px;">
+          <option value="all">All Terms</option>
+          <option>First Term</option>
+          <option>Second Term</option>
+          <option>Third Term</option>
+        </select>
+      </div>
+      <div id="resultsByStudent"></div>
+    </div>
+  </div>
+
+  <!-- SUBJECTS TAB -->
+  <div id="tab-subjects" class="tab-content" style="display:none;">
+    <div class="card">
+      <h3>📚 Assign Subjects to My Class</h3>
+      <p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">
+        Tick the subjects taught in your class. Students confirm from these.
+      </p>
+      <div id="subjectCheckboxes"
+        style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+      </div>
+      <button onclick="saveClassSubjects()" class="btn-primary"
+        style="margin-top:20px;">Save Subjects</button>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import {
+  collection, getDocs, addDoc, deleteDoc,
+  doc, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("teacher");
+if(!session) throw new Error("Not authorised");
+
+const myClass = session.className;
+let myStudents = [];
+let activeTerm = "First Term";
+let activeSession = "";
+let selectedSubject = "";
+
+const ALL_SUBJECTS = [
+  "Mathematics","English Language","Basic Science","Basic Technology",
+  "Social Studies","Civic Education","Agricultural Science","Home Economics",
+  "Computer Studies","French","Yoruba","Igbo","Hausa",
+  "Christian Religious Studies","Islamic Religious Studies",
+  "Physical & Health Education","Creative Arts","Music",
+  "Business Studies","Economics","Commerce","Accounting",
+  "Government","History","Geography","Biology","Chemistry",
+  "Physics","Further Mathematics","Technical Drawing",
+  "Food & Nutrition","Clothing & Textiles","Literature in English",
+  "Financial Accounting","Marketing","Office Practice"
+];
+
+document.getElementById("teacherClassLabel").textContent = myClass;
+document.getElementById("mobileClassLabel").textContent  = myClass;
+document.getElementById("classHeading").textContent      = "📚 "+myClass;
+
+window.doLogout = function(){
+  signOut(window.auth).then(()=>{ window.clearSession(); window.location.href="login.html"; });
+};
+window.toggleSidebar = function(){
+  document.getElementById("sidebar").classList.toggle("open");
+};
+window.showTab = function(tab, btn){
+  document.querySelectorAll(".tab-content").forEach(t=>t.style.display="none");
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+tab).style.display="block";
+  if(btn) btn.classList.add("active");
+};
+
+function getGrade(s){
+  return s>=70?"A":s>=60?"B":s>=50?"C":s>=40?"D":"F";
+}
+
+setTimeout(async()=>{
+  const db = window.db;
+
+  // Load settings
+  try {
+    const ss = await getDoc(doc(db,"settings","school"));
+    if(ss.exists()){
+      activeTerm    = ss.data().term    || "First Term";
+      activeSession = ss.data().session || "";
+    }
+  } catch(e){}
+
+  document.getElementById("termLabel").textContent =
+    `${activeTerm} · ${activeSession||"Set session in Settings"}`;
+  document.getElementById("attTerm").value    = activeTerm;
+  document.getElementById("attSession").value = activeSession;
+  document.getElementById("attDate").valueAsDate = new Date();
+  document.getElementById("resultTerm").value = activeTerm;
+
+  // Load students
+  const snap = await getDocs(collection(db,"students"));
+  myStudents = [];
+  snap.forEach(d=>{
+    const data = d.data();
+    if(data.class===myClass && data.status!=="graduated"){
+      myStudents.push({id:d.id,...data});
+    }
+  });
+
+  // ── STUDENTS TABLE ───────────────────────────────────
+  const stb = document.getElementById("myStudentsTable");
+  if(myStudents.length===0){
+    stb.innerHTML=`<tr><td colspan="5"
+      style="text-align:center;color:#64748b;padding:24px;">
+      No students in ${myClass} yet.</td></tr>`;
+  } else {
+    myStudents.forEach(s=>{
+      const photo = s.photo
+        ?`<img src="${s.photo}" style="width:38px;height:48px;object-fit:cover;
+            border-radius:6px;border:2px solid #d4a24c;">`
+        :`<div style="width:38px;height:48px;background:#0f172a;border-radius:6px;
+            display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>`;
+      stb.innerHTML+=`
+        <tr>
+          <td>${photo}</td>
+          <td style="font-weight:600;">${s.fullName||s.name||"—"}</td>
+          <td style="color:#94a3b8;font-size:13px;">${s.bloodGroup||"—"}</td>
+          <td style="font-size:12px;color:#f59e0b;">${s.medicalCondition||"None"}</td>
+          <td><a href="student.html?id=${s.id}" class="btn-view">View Profile</a></td>
+        </tr>`;
+    });
+  }
+
+  // ── ATTENDANCE LIST ───────────────────────────────────
+  const attList = document.getElementById("attendanceList");
+  myStudents.forEach(s=>{
+    attList.innerHTML+=`
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        padding:10px 0;border-bottom:1px solid #1e293b;flex-wrap:wrap;gap:8px;">
+        <span style="font-size:14px;min-width:180px;">
+          ${s.fullName||s.name||"—"}
+        </span>
+        <div style="display:flex;gap:12px;">
+          <label style="display:flex;align-items:center;gap:6px;
+            color:#22c55e;cursor:pointer;font-size:13px;">
+            <input type="radio" name="att-${s.id}" value="Present"> Present
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;
+            color:#ef4444;cursor:pointer;font-size:13px;">
+            <input type="radio" name="att-${s.id}" value="Absent"> Absent
+          </label>
+        </div>
+      </div>`;
+  });
+
+  window.saveAllAttendance = async function(){
+    const date    = document.getElementById("attDate").value;
+    const term    = document.getElementById("attTerm").value;
+    const session = document.getElementById("attSession").value.trim();
+    if(!date||!session){ alert("Please fill date and session."); return; }
+    let saved=0;
+    for(const s of myStudents){
+      const sel = document.querySelector(`input[name="att-${s.id}"]:checked`);
+      if(sel){
+        await setDoc(doc(db,"attendance",s.id+"_"+date),{
+          studentId:s.id, status:sel.value, date, term, session
+        });
+        saved++;
+      }
+    }
+    alert(`Attendance saved for ${saved} student${saved!==1?"s":""}!`);
+    loadAttHistory();
+  };
+
+  // ── ATTENDANCE HISTORY ───────────────────────────────
+  window.loadAttHistory = async function(){
+    const filterTerm = document.getElementById("attHistoryTerm").value;
+    const aSnap = await getDocs(collection(db,"attendance"));
+    const container = document.getElementById("attHistoryContent");
+
+    // Group by date
+    const byDate = {};
+    aSnap.forEach(d=>{
+      const data = d.data();
+      const s = myStudents.find(st=>st.id===data.studentId);
+      if(!s) return;
+      if(filterTerm!=="all"&&data.term!==filterTerm) return;
+      if(!byDate[data.date]) byDate[data.date]={term:data.term,records:[]};
+      byDate[data.date].records.push({name:s.fullName||s.name,status:data.status});
+    });
+
+    const dates = Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+
+    if(dates.length===0){
+      container.innerHTML=`<p style="color:#64748b;text-align:center;padding:20px;">
+        No attendance records yet.</p>`;
+      return;
+    }
+
+    container.innerHTML = dates.map(date=>`
+      <div class="collapsible-row" onclick="toggleCollapsible('ah-${date.replace(/-/g,'')}',this)">
+        <span>📅 ${date} &nbsp;
+          <span style="color:#94a3b8;font-size:12px;">${byDate[date].term}</span>
+        </span>
+        <span class="tree-arrow">▶</span>
+      </div>
+      <div class="collapsible-body" id="ah-${date.replace(/-/g,'')}" style="display:none;">
+        ${byDate[date].records.map(r=>`
+          <div style="display:flex;justify-content:space-between;
+            padding:8px 16px;border-bottom:1px solid #1e293b;">
+            <span style="font-size:13px;">${r.name}</span>
+            <span style="font-size:13px;font-weight:600;
+              color:${r.status==="Present"?"#22c55e":"#ef4444"};">
+              ${r.status}
+            </span>
+          </div>`).join("")}
+      </div>`).join("");
+  };
+
+  loadAttHistory();
+
+  // ── RESULTS ──────────────────────────────────────────
+  // Student dropdown
+  const rs = document.getElementById("resultStudent");
+  myStudents.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.fullName||s.name||"—";
+    rs.appendChild(opt);
+  });
+
+  // Subject autocomplete
+  window.filterSubjectsSuggestions = function(){
+    const q    = document.getElementById("resultSubject").value.toLowerCase();
+    const drop = document.getElementById("subjectSuggestions");
+    if(q.length<1){ drop.style.display="none"; selectedSubject=""; return; }
+    const matches = ALL_SUBJECTS.filter(s=>s.toLowerCase().includes(q));
+    if(!matches.length){ drop.style.display="none"; return; }
+    drop.innerHTML = matches.map(s=>
+      `<div class="subject-option" onclick="pickSubject('${s}')">${s}</div>`
+    ).join("");
+    drop.style.display="block";
+  };
+  window.pickSubject = function(s){
+    selectedSubject = s;
+    document.getElementById("resultSubject").value = s;
+    document.getElementById("subjectSuggestions").style.display="none";
+  };
+  document.addEventListener("click",e=>{
+    if(!e.target.closest(".form-group"))
+      document.getElementById("subjectSuggestions").style.display="none";
+  });
+
+  window.saveResult = async function(){
+    const studentId = document.getElementById("resultStudent").value;
+    const subject   = selectedSubject||document.getElementById("resultSubject").value.trim();
+    const score     = parseInt(document.getElementById("resultScore").value);
+    const term      = document.getElementById("resultTerm").value;
+    if(!subject){ alert("Please select a subject."); return; }
+    if(isNaN(score)||score<0||score>100){ alert("Enter a valid score 0–100."); return; }
+
+    await addDoc(collection(db,"results"),{
+      studentId, subject, score,
+      grade: getGrade(score), term,
+      class: myClass, createdAt: new Date()
+    });
+    alert("Result saved!");
+    document.getElementById("resultSubject").value="";
+    document.getElementById("resultScore").value="";
+    selectedSubject="";
+    loadResults();
+  };
+
+  // ── RESULTS BY STUDENT (COLLAPSIBLE) ─────────────────
+  window.loadResults = async function(){
+    const filterTerm = document.getElementById("resultFilterTerm").value;
+    const rSnap      = await getDocs(collection(db,"results"));
+    const container  = document.getElementById("resultsByStudent");
+
+    // Group by student
+    const byStudent = {};
+    rSnap.forEach(d=>{
+      const data = d.data();
+      const s = myStudents.find(st=>st.id===data.studentId);
+      if(!s) return;
+      if(filterTerm!=="all"&&data.term!==filterTerm) return;
+      if(!byStudent[s.id])
+        byStudent[s.id]={ name:s.fullName||s.name, results:[] };
+      byStudent[s.id].results.push({...data, docId:d.id});
+    });
+
+    const entries = Object.entries(byStudent);
+    if(entries.length===0){
+      container.innerHTML=`<p style="color:#64748b;text-align:center;padding:24px;">
+        No results yet.</p>`;
+      return;
+    }
+
+    container.innerHTML = entries.map(([sid,{name,results}])=>{
+      const avg = results.length>0
+        ? (results.reduce((a,b)=>a+b.score,0)/results.length).toFixed(1)
+        : "—";
+      const grade = avg!=="—" ? getGrade(parseFloat(avg)) : "—";
+      const gradeColor = grade==="A"?"#22c55e":grade==="B"?"#3b82f6":
+                         grade==="C"?"#f59e0b":grade==="D"?"#f97316":"#ef4444";
+
+      return `
+        <div class="collapsible-row"
+          onclick="toggleCollapsible('rs-${sid}',this)">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-weight:600;">${name}</span>
+            <span style="font-size:12px;color:#64748b;">
+              ${results.length} subject${results.length!==1?"s":""}
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-weight:700;color:${gradeColor};">
+              Avg: ${avg} (${grade})
+            </span>
+            <span class="tree-arrow">▶</span>
+          </div>
+        </div>
+        <div class="collapsible-body" id="rs-${sid}" style="display:none;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:#0f172a;">
+                <th style="padding:8px 12px;text-align:left;color:#64748b;
+                  font-size:11px;text-transform:uppercase;">Subject</th>
+                <th style="padding:8px 12px;text-align:left;color:#64748b;
+                  font-size:11px;text-transform:uppercase;">Score</th>
+                <th style="padding:8px 12px;text-align:left;color:#64748b;
+                  font-size:11px;text-transform:uppercase;">Grade</th>
+                <th style="padding:8px 12px;text-align:left;color:#64748b;
+                  font-size:11px;text-transform:uppercase;">Term</th>
+                <th style="padding:8px 12px;text-align:left;color:#64748b;
+                  font-size:11px;text-transform:uppercase;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${results.map(r=>{
+                const gc = r.grade==="A"?"#22c55e":r.grade==="B"?"#3b82f6":
+                           r.grade==="C"?"#f59e0b":r.grade==="D"?"#f97316":"#ef4444";
+                return `
+                  <tr style="border-bottom:1px solid #1e293b;">
+                    <td style="padding:8px 12px;">${r.subject}</td>
+                    <td style="padding:8px 12px;font-weight:600;">${r.score}</td>
+                    <td style="padding:8px 12px;font-weight:700;color:${gc};">${r.grade}</td>
+                    <td style="padding:8px 12px;color:#94a3b8;">${r.term}</td>
+                    <td style="padding:8px 12px;">
+                      <button onclick="deleteResult('${r.docId}')"
+                        class="btn-delete">Delete</button>
+                    </td>
+                  </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }).join("");
+  };
+
+  window.deleteResult = async function(id){
+    if(!confirm("Delete this result?")) return;
+    await deleteDoc(doc(db,"results",id));
+    loadResults();
+  };
+
+  loadResults();
+
+  // ── SUBJECTS TAB ─────────────────────────────────────
+  const classKey   = myClass.replace(/\s/g,"-");
+  const csSnap     = await getDoc(doc(db,"classSubjects",classKey));
+  const assigned   = csSnap.exists()?(csSnap.data().subjects||[]):[];
+  const subContainer = document.getElementById("subjectCheckboxes");
+
+  ALL_SUBJECTS.forEach(subj=>{
+    const checked = assigned.includes(subj)?"checked":"";
+    subContainer.innerHTML+=`
+      <label style="display:flex;align-items:center;gap:8px;padding:8px;
+        background:#0f172a;border-radius:8px;cursor:pointer;
+        font-size:13px;color:#cbd5e1;">
+        <input type="checkbox" value="${subj}" ${checked}
+          style="accent-color:#d4a24c;width:15px;height:15px;">
+        ${subj}
+      </label>`;
+  });
+
+  window.saveClassSubjects = async function(){
+    const checked = [...document.querySelectorAll(
+      "#subjectCheckboxes input:checked"
+    )].map(i=>i.value);
+    await setDoc(doc(db,"classSubjects",classKey),
+      { subjects:checked, class:myClass });
+    alert("Subjects saved! Students can now confirm theirs.");
+  };
+
+  // ── COLLAPSIBLE HELPER ───────────────────────────────
+  window.toggleCollapsible = function(id, row){
+    const body = document.getElementById(id);
+    const arr  = row.querySelector(".tree-arrow");
+    const open = body.style.display!=="none";
+    body.style.display = open?"none":"block";
+    if(arr) arr.textContent = open?"▶":"▼";
+  };
+
+},500);
+</script>
+</body>
+</html>

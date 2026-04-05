@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Announcements – Corona Model College</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🎓</span>
+    <div>
+      <h2>Corona Model</h2>
+      <span style="font-size:10px;color:#475569;">Admin Portal</span>
+    </div>
+  </div>
+  <nav>
+    <a href="admin-dashboard.html">📊 Dashboard</a>
+    <a href="announcements.html" class="active">📢 Announcements</a>
+    <a href="reportcard.html">📋 Report Cards</a>
+    <a href="fees.html">💰 School Fees</a>
+    <a href="alumni.html">🎓 Alumni</a>
+    <a href="manage-accounts.html">🔐 Manage Accounts</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </nav>
+  <button onclick="doLogout()" class="logout-btn">⏻ Logout</button>
+</div>
+
+<div class="mobile-topbar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">Announcements</span>
+</div>
+
+<div class="main-content">
+
+  <div class="topbar">
+    <h1>📢 Announcements</h1>
+    <p class="topbar-sub">Post notices to the board and send SMS to parents, students and teachers.</p>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('post',this)">✏️ Post Announcement</button>
+    <button class="tab-btn" onclick="showTab('board',this)">📋 Notice Board</button>
+    <button class="tab-btn" onclick="showTab('contacts',this)">📱 Phone Directory</button>
+    <button class="tab-btn" onclick="showTab('requests',this)">📨 Teacher Requests</button>
+  </div>
+
+  <!-- POST TAB -->
+  <div id="tab-post" class="tab-content">
+    <div class="card">
+      <h3>✏️ New Announcement</h3>
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Title</label>
+        <input id="annTitle" placeholder="e.g. End of Term Examination Schedule">
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Message</label>
+        <textarea id="annBody" rows="5"
+          placeholder="Type your announcement here..."
+          style="width:100%;padding:12px 14px;background:#0f172a;
+          border:1px solid #334155;border-radius:8px;color:#e2e8f0;
+          font-family:'DM Sans',sans-serif;font-size:14px;
+          outline:none;resize:vertical;"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="annCategory">
+            <option value="general">📢 General</option>
+            <option value="exams">📝 Examinations</option>
+            <option value="fees">💰 Fees</option>
+            <option value="events">🎉 Events</option>
+            <option value="holiday">🏖️ Holiday</option>
+            <option value="urgent">🚨 Urgent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Audience</label>
+          <select id="annAudience">
+            <option value="all">Everyone (All active students & parents)</option>
+            <option value="parents">Parents only</option>
+            <option value="students">Students only</option>
+            <option value="class">Specific Class</option>
+          </select>
+        </div>
+        <div class="form-group" id="classTargetGroup" style="display:none;">
+          <label>Select Class</label>
+          <select id="annClass">
+            <optgroup label="Basic School">
+              <option>Basic 1A</option><option>Basic 1B</option>
+              <option>Basic 2A</option><option>Basic 2B</option>
+              <option>Basic 3A</option><option>Basic 3B</option>
+            </optgroup>
+            <optgroup label="Senior Secondary">
+              <option>SS 1 Art</option><option>SS 1 Commercial</option>
+              <option>SS 1 Science</option><option>SS 2 Art</option>
+              <option>SS 2 Commercial</option><option>SS 2 Science</option>
+              <option>SS 3 Art</option><option>SS 3 Commercial</option>
+              <option>SS 3 Science</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- SMS OPTIONS -->
+      <div class="ann-sms-box">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:8px;
+            cursor:pointer;font-size:14px;color:#cbd5e1;">
+            <input type="checkbox" id="sendSMS"
+              style="accent-color:#d4a24c;width:16px;height:16px;"
+              onchange="toggleSMSOptions()">
+            📱 Send as SMS to phone numbers
+          </label>
+        </div>
+
+        <div id="smsOptions" style="display:none;">
+          <div style="background:#0f172a;border-radius:8px;
+            padding:14px;margin-bottom:12px;">
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:10px;">
+              SMS will be sent via <strong style="color:#d4a24c;">Termii</strong>.
+              Enter your Termii API key in Settings first.
+            </p>
+            <div id="smsRecipientSummary"
+              style="font-size:13px;color:#64748b;">
+              Calculating recipients...
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:6px;
+              font-size:13px;color:#cbd5e1;cursor:pointer;">
+              <input type="checkbox" id="smsParents" checked
+                style="accent-color:#d4a24c;">
+              Include Parent numbers
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;
+              font-size:13px;color:#cbd5e1;cursor:pointer;">
+              <input type="checkbox" id="smsStudents" checked
+                style="accent-color:#d4a24c;">
+              Include Student numbers
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <button onclick="postAnnouncement(false)" class="btn-primary">
+          📋 Post to Notice Board Only
+        </button>
+        <button onclick="postAnnouncement(true)"
+          style="padding:10px 22px;background:#1e3a5f;color:#93c5fd;
+          border:none;border-radius:8px;font-weight:700;
+          font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;">
+          📱 Post + Send SMS
+        </button>
+      </div>
+
+      <div id="postResult" style="display:none;margin-top:16px;
+        padding:14px;border-radius:8px;font-size:14px;"></div>
+    </div>
+  </div>
+
+  <!-- NOTICE BOARD TAB -->
+  <div id="tab-board" class="tab-content" style="display:none;">
+    <div class="card">
+      <div class="card-header-row">
+        <h3>📋 Notice Board</h3>
+        <div style="display:flex;gap:8px;">
+          <select id="boardFilter" onchange="loadBoard()"
+            style="padding:8px;background:#0f172a;border:1px solid #334155;
+            border-radius:8px;color:#e2e8f0;font-size:13px;">
+            <option value="all">All Categories</option>
+            <option value="general">General</option>
+            <option value="exams">Examinations</option>
+            <option value="fees">Fees</option>
+            <option value="events">Events</option>
+            <option value="holiday">Holiday</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+      <div id="boardList"></div>
+    </div>
+  </div>
+
+  <!-- PHONE DIRECTORY TAB -->
+  <div id="tab-contacts" class="tab-content" style="display:none;">
+    <div class="card">
+      <div class="card-header-row">
+        <h3>📱 Active Phone Directory</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="totalPhoneCount"
+            style="font-size:13px;color:#64748b;"></span>
+          <button onclick="copyAllNumbers()"
+            style="padding:7px 14px;background:#1e293b;border:1px solid #334155;
+            color:#94a3b8;border-radius:8px;cursor:pointer;font-size:13px;">
+            📋 Copy All
+          </button>
+        </div>
+      </div>
+      <p style="color:#64748b;font-size:13px;margin-bottom:16px;">
+        Unique phone numbers from all active (non-graduated) student profiles.
+        Duplicates and alumni numbers are automatically excluded.
+      </p>
+      <div id="phoneDirectory"></div>
+    </div>
+  </div>
+
+  <!-- TEACHER REQUESTS TAB -->
+  <div id="tab-requests" class="tab-content" style="display:none;">
+    <div class="card">
+      <h3>📨 Announcement Requests from Teachers</h3>
+      <div id="requestsList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module">
+import {
+  collection, getDocs, addDoc, deleteDoc,
+  doc, getDoc, updateDoc, setDoc, orderBy, query
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const session = window.requireRole("admin");
+if(!session) throw new Error("Not authorised");
+
+let allStudents  = [];
+let allPhones    = [];
+let termiiApiKey = "";
+
+window.doLogout = function(){
+  signOut(window.auth).then(()=>{
+    window.clearSession();
+    window.location.href = "login.html";
+  });
+};
+window.toggleSidebar = function(){
+  document.getElementById("sidebar").classList.toggle("open");
+};
+window.showTab = function(tab, btn){
+  document.querySelectorAll(".tab-content")
+    .forEach(t => t.style.display = "none");
+  document.querySelectorAll(".tab-btn")
+    .forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-"+tab).style.display = "block";
+  if(btn) btn.classList.add("active");
+  if(tab === "board")    loadBoard();
+  if(tab === "contacts") loadPhoneDirectory();
+  if(tab === "requests") loadRequests();
+};
+
+// Show/hide class selector
+document.getElementById("annAudience").addEventListener("change", function(){
+  document.getElementById("classTargetGroup").style.display =
+    this.value === "class" ? "block" : "none";
+  if(document.getElementById("sendSMS").checked) calcRecipients();
+});
+
+window.toggleSMSOptions = function(){
+  const show = document.getElementById("sendSMS").checked;
+  document.getElementById("smsOptions").style.display = show ? "block" : "none";
+  if(show) calcRecipients();
+};
+
+// ── LOAD DATA ────────────────────────────────────────────
+setTimeout(async()=>{
+  const db = window.db;
+
+  // Load Termii key from settings
+  try {
+    const ss = await getDoc(doc(db,"settings","school"));
+    if(ss.exists()) termiiApiKey = ss.data().termiiKey || "";
+  } catch(e){}
+
+  // Load students
+  const snap = await getDocs(collection(db,"students"));
+  allStudents = [];
+  snap.forEach(d => allStudents.push({id:d.id,...d.data()}));
+
+  buildPhoneList();
+  loadBoard();
+
+  // Audience/SMS checkboxes trigger recalc
+  ["smsParents","smsStudents"].forEach(id=>{
+    document.getElementById(id).addEventListener("change", calcRecipients);
+  });
+
+  // ── PHONE LIST ─────────────────────────────────────────
+  function buildPhoneList(){
+    const phoneSet = new Set();
+    allStudents
+      .filter(s => s.status !== "graduated")
+      .forEach(s => {
+        [s.parentPhone1, s.parentPhone2, s.phone].forEach(p => {
+          if(p && p.trim()) phoneSet.add(normalisePhone(p.trim()));
+        });
+      });
+    allPhones = [...phoneSet].filter(Boolean);
+  }
+
+  function normalisePhone(p){
+    p = p.replace(/\s+/g,"");
+    if(p.startsWith("0")) p = "+234"+p.slice(1);
+    if(!p.startsWith("+")) p = "+234"+p;
+    return p;
+  }
+
+  function getAudiencePhones(){
+    const audience  = document.getElementById("annAudience").value;
+    const targetCls = document.getElementById("annClass").value;
+    const incParents  = document.getElementById("smsParents").checked;
+    const incStudents = document.getElementById("smsStudents").checked;
+
+    const phoneSet = new Set();
+    allStudents
+      .filter(s => s.status !== "graduated")
+      .filter(s => audience === "all" || audience === "class"
+        ? (audience === "class" ? s.class === targetCls : true)
+        : true
+      )
+      .forEach(s => {
+        if(incParents){
+          [s.parentPhone1, s.parentPhone2].forEach(p=>{
+            if(p&&p.trim()) phoneSet.add(normalisePhone(p.trim()));
+          });
+        }
+        if(incStudents && s.phone){
+          phoneSet.add(normalisePhone(s.phone.trim()));
+        }
+      });
+
+    return [...phoneSet].filter(Boolean);
+  }
+
+  function calcRecipients(){
+    const phones = getAudiencePhones();
+    document.getElementById("smsRecipientSummary").innerHTML =
+      `<strong style="color:#d4a24c;">${phones.length}</strong>
+       unique number${phones.length!==1?"s":""}
+       will receive this SMS.`;
+  }
+
+  // ── POST ANNOUNCEMENT ──────────────────────────────────
+  window.postAnnouncement = async function(sendSMS){
+    const title    = document.getElementById("annTitle").value.trim();
+    const body     = document.getElementById("annBody").value.trim();
+    const category = document.getElementById("annCategory").value;
+    const audience = document.getElementById("annAudience").value;
+    const targetCls= document.getElementById("annClass").value;
+
+    if(!title || !body){
+      alert("Please enter a title and message.");
+      return;
+    }
+
+    const resultEl = document.getElementById("postResult");
+    resultEl.style.display  = "block";
+    resultEl.style.background = "#1e293b";
+    resultEl.style.color    = "#94a3b8";
+    resultEl.textContent    = "Posting...";
+
+    // Save to Firestore
+    await addDoc(collection(db,"announcements"),{
+      title, body, category, audience,
+      targetClass: audience==="class" ? targetCls : null,
+      postedBy:    "admin",
+      postedAt:    new Date().toISOString(),
+      smsSent:     false,
+      smsCount:    0
+    });
+
+    let smsResult = "";
+
+    if(sendSMS){
+      if(!termiiApiKey){
+        smsResult = "⚠️ SMS skipped — no Termii API key set in Settings.";
+      } else {
+        const phones  = getAudiencePhones();
+        const message = `${title}\n\n${body}\n\n- Corona Model College`;
+
+        resultEl.textContent = `Sending SMS to ${phones.length} numbers...`;
+
+        let sent = 0, failed = 0;
+
+        for(const phone of phones){
+          try {
+            const resp = await fetch("https://api.ng.termii.com/api/sms/send",{
+              method: "POST",
+              headers: { "Content-Type":"application/json" },
+              body: JSON.stringify({
+                to:      phone,
+                from:    "CoronaModel",
+                sms:     message,
+                type:    "plain",
+                channel: "generic",
+                api_key: termiiApiKey
+              })
+            });
+            const data = await resp.json();
+            if(data.message_id || data.message==="Successfully Sent") sent++;
+            else failed++;
+          } catch(e){ failed++; }
+        }
+
+        smsResult = `📱 SMS: ${sent} sent, ${failed} failed out of ${phones.length} numbers.`;
+      }
+    }
+
+    // Clear form
+    document.getElementById("annTitle").value = "";
+    document.getElementById("annBody").value  = "";
+
+    resultEl.style.background = "#14532d";
+    resultEl.style.color      = "#86efac";
+    resultEl.innerHTML =
+      `✅ Announcement posted to Notice Board.${sendSMS?" "+smsResult:""}`;
+
+    setTimeout(()=>{ resultEl.style.display="none"; }, 6000);
+    loadBoard();
+  };
+
+  // ── NOTICE BOARD ───────────────────────────────────────
+  window.loadBoard = async function(){
+    const filter  = document.getElementById("boardFilter")?.value || "all";
+    const snap    = await getDocs(collection(db,"announcements"));
+    const list    = document.getElementById("boardList");
+    list.innerHTML= "";
+
+    let announcements = [];
+    snap.forEach(d => announcements.push({id:d.id,...d.data()}));
+
+    // Sort newest first
+    announcements.sort((a,b)=>
+      new Date(b.postedAt) - new Date(a.postedAt)
+    );
+
+    if(filter !== "all")
+      announcements = announcements.filter(a => a.category === filter);
+
+    if(announcements.length === 0){
+      list.innerHTML = `<p style="color:#64748b;text-align:center;padding:32px;">
+        No announcements yet.</p>`;
+      return;
+    }
+
+    const catEmoji = {
+      general:"📢", exams:"📝", fees:"💰",
+      events:"🎉", holiday:"🏖️", urgent:"🚨"
+    };
+    const catColor = {
+      general:"#3b82f6", exams:"#f59e0b", fees:"#d4a24c",
+      events:"#22c55e", holiday:"#a78bfa", urgent:"#ef4444"
+    };
+
+    announcements.forEach(a => {
+      const date = new Date(a.postedAt).toLocaleDateString("en-NG",{
+        day:"numeric", month:"long", year:"numeric",
+        hour:"2-digit", minute:"2-digit"
+      });
+      const emoji = catEmoji[a.category] || "📢";
+      const color = catColor[a.category] || "#3b82f6";
+
+      list.innerHTML += `
+        <div class="ann-card">
+          <div class="ann-card-header">
+            <span class="ann-category-badge"
+              style="background:${color}22;color:${color};border:1px solid ${color}44;">
+              ${emoji} ${a.category.charAt(0).toUpperCase()+a.category.slice(1)}
+            </span>
+            <span style="font-size:12px;color:#475569;">${date}</span>
+            <span style="font-size:12px;color:#475569;margin-left:auto;">
+              ${a.audience==="class"
+                ? `📚 ${a.targetClass}`
+                : a.audience==="parents" ? "👪 Parents"
+                : a.audience==="students" ? "👨‍🎓 Students"
+                : "🌐 Everyone"}
+            </span>
+          </div>
+          <h4 class="ann-title">${a.title}</h4>
+          <p class="ann-body">${a.body.replace(/\n/g,"<br>")}</p>
+          <div class="ann-footer">
+            <span style="color:#64748b;font-size:12px;">
+              Posted by ${a.postedBy==="admin"?"Admin":"Teacher"}
+            </span>
+            <button onclick="deleteAnnouncement('${a.id}')"
+              class="btn-delete" style="font-size:12px;padding:4px 10px;">
+              Delete
+            </button>
+          </div>
+        </div>`;
+    });
+  };
+
+  window.deleteAnnouncement = async function(id){
+    if(!confirm("Delete this announcement?")) return;
+    await deleteDoc(doc(db,"announcements",id));
+    loadBoard();
+  };
+
+  // ── PHONE DIRECTORY ────────────────────────────────────
+  window.loadPhoneDirectory = function(){
+    buildPhoneList();
+    const container = document.getElementById("phoneDirectory");
+    document.getElementById("totalPhoneCount").textContent =
+      `${allPhones.length} unique numbers`;
+
+    if(allPhones.length === 0){
+      container.innerHTML = `<p style="color:#64748b;text-align:center;padding:24px;">
+        No phone numbers found. Add parent contacts to student profiles.</p>`;
+      return;
+    }
+
+    // Group by class
+    const byClass = {};
+    allStudents
+      .filter(s => s.status !== "graduated")
+      .forEach(s => {
+        const phones = [s.parentPhone1, s.parentPhone2, s.phone]
+          .filter(Boolean).map(p=>normalisePhone(p.trim()));
+        if(phones.length === 0) return;
+        if(!byClass[s.class]) byClass[s.class] = [];
+        phones.forEach(p => {
+          if(!byClass[s.class].find(e=>e.phone===p)){
+            byClass[s.class].push({
+              phone: p,
+              name:  s.fullName||s.name||"—",
+              type:  s.parentPhone1&&normalisePhone(s.parentPhone1)===p
+                     ? "Parent 1"
+                     : s.parentPhone2&&normalisePhone(s.parentPhone2)===p
+                     ? "Parent 2" : "Student"
+            });
+          }
+        });
+      });
+
+    container.innerHTML = Object.entries(byClass).map(([cls, entries])=>`
+      <div style="margin-bottom:20px;">
+        <div class="branch-header" style="margin-bottom:10px;">
+          🏫 ${cls}
+          <span class="branch-count">${entries.length}</span>
+        </div>
+        <div style="display:grid;
+          grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;">
+          ${entries.map(e=>`
+            <div style="background:#0f172a;border:1px solid #334155;
+              border-radius:8px;padding:10px 14px;
+              display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#e2e8f0;">
+                  ${e.phone}
+                </div>
+                <div style="font-size:11px;color:#64748b;">
+                  ${e.name} · ${e.type}
+                </div>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`).join("");
+  };
+
+  window.copyAllNumbers = function(){
+    const text = allPhones.join("\n");
+    navigator.clipboard.writeText(text).then(()=>{
+      alert(`✅ ${allPhones.length} phone numbers copied to clipboard.`);
+    });
+  };
+
+  // ── TEACHER REQUESTS ───────────────────────────────────
+  window.loadRequests = async function(){
+    const snap = await getDocs(collection(db,"announcementRequests"));
+    const list = document.getElementById("requestsList");
+    list.innerHTML = "";
+
+    let requests = [];
+    snap.forEach(d => requests.push({id:d.id,...d.data()}));
+    requests.sort((a,b)=> new Date(b.requestedAt)-new Date(a.requestedAt));
+
+    if(requests.length === 0){
+      list.innerHTML = `<p style="color:#64748b;text-align:center;padding:24px;">
+        No pending requests.</p>`;
+      return;
+    }
+
+    requests.forEach(r => {
+      const date = new Date(r.requestedAt).toLocaleDateString("en-NG",{
+        day:"numeric", month:"short", year:"numeric"
+      });
+      const statusColor = r.status==="approved"?"#22c55e":
+                          r.status==="rejected"?"#ef4444":"#f59e0b";
+
+      list.innerHTML += `
+        <div class="ann-card">
+          <div class="ann-card-header">
+            <span style="font-size:12px;color:#64748b;">
+              From: <strong style="color:#94a3b8;">${r.teacherClass}</strong>
+              · ${date}
+            </span>
+            <span style="font-size:12px;font-weight:700;color:${statusColor};
+              margin-left:auto;">
+              ${(r.status||"pending").toUpperCase()}
+            </span>
+          </div>
+          <h4 class="ann-title">${r.title}</h4>
+          <p class="ann-body">${r.body}</p>
+          ${r.status==="pending" ? `
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button onclick="approveRequest('${r.id}','${r.title}','${r.body.replace(/'/g,"\\'")}')"
+              class="btn-primary" style="padding:7px 16px;font-size:13px;">
+              ✅ Approve & Post
+            </button>
+            <button onclick="rejectRequest('${r.id}')"
+              class="btn-delete" style="padding:7px 16px;">
+              ❌ Reject
+            </button>
+          </div>` : ""}
+        </div>`;
+    });
+  };
+
+  window.approveRequest = async function(id, title, body){
+    // Post as announcement
+    await addDoc(collection(db,"announcements"),{
+      title, body,
+      category:  "general",
+      audience:  "all",
+      postedBy:  "admin",
+      postedAt:  new Date().toISOString(),
+      smsSent:   false,
+      smsCount:  0
+    });
+    // Mark as approved
+    await updateDoc(doc(db,"announcementRequests",id),{
+      status: "approved"
+    });
+    alert("✅ Request approved and posted.");
+    loadRequests();
+  };
+
+  window.rejectRequest = async function(id){
+    if(!confirm("Reject this request?")) return;
+    await updateDoc(doc(db,"announcementRequests",id),{
+      status: "rejected"
+    });
+    loadRequests();
+  };
+
+  loadBoard();
+
+},500);
+</script>
+</body>
+</html>
